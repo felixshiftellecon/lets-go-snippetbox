@@ -14,19 +14,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Initialize a slice containting the paths to the two files. Note that the
-	// home.page.tmpl file must be the *first* files in the slice.
 	files := []string{
 		"./ui/html/home.page.tmpl",
 		"./ui/html/base.layout.tmpl",
 		"./ui/html/footer.partial.tmpl",
 	}
 
-	// Use the template.ParseFiles() function to read the template file into a
-	// template set. If there's an error, we log the detailed error message and use
-	// the hrttp.Eror() function to send a generic 500 Internal Server Errror
-	// Response to the user.
-	// Notice that we can pass the slice of the file paths as a variadic parameter?
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Println(err.Error())
@@ -34,9 +27,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// We then use the Execute() method on the template set to write the template
-	// connect as the response body. The last parameter to Execute() represents any
-	// dynamic data that we want to pass in, which for now we'll leave as nil.
 	err = ts.Execute(w, nil)
 	if err != nil {
 		log.Println(err.Error())
