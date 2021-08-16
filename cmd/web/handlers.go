@@ -22,7 +22,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use the new render helper
 	app.render(w, r, "home.page.tmpl", &templateData{Snippets: s})
 }
 
@@ -43,7 +42,6 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use the new render helper.
 	app.render(w, r, "show.page.tmpl", &templateData{Snippet: s})
 }
 
