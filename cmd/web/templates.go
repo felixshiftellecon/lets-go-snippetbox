@@ -9,8 +9,6 @@ import (
 	"github.com/felixshiftellecon/snippetbox/pkg/models"
 )
 
-// Update the templateData fields, removing the individual FormData and
-// FormErrors fields and replacing them with a single Form field
 type templateData struct {
 	CurrentYear int
 	Form        *forms.Form
