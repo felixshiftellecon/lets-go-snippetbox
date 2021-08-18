@@ -9,8 +9,10 @@ import (
 	"github.com/felixshiftellecon/snippetbox/pkg/models"
 )
 
+// Add a Flash field to the templateData struct
 type templateData struct {
 	CurrentYear int
+	Flash       string
 	Form        *forms.Form
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
