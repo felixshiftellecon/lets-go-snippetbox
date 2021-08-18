@@ -16,12 +16,14 @@ import (
 	"github.com/golangcollege/sessions"
 )
 
+// Add a new users field to the application struct
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
 	session       *sessions.Session
 	snippets      *mysql.SnippetModel
 	templateCache map[string]*template.Template
+	users         *mysql.UserModel
 }
 
 func main() {
@@ -49,12 +51,15 @@ func main() {
 	session.Lifetime = 12 * time.Hour
 	session.Secure = true
 
+	// Initialize a mysql.UserModel instance and add it to the application
+	// dependencies.
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
 		session:       session,
 		snippets:      &mysql.SnippetModel{DB: db},
 		templateCache: templateCache,
+		users:         &mysql.UserModel{DB: db},
 	}
 
 	tlsConfig := &tls.Config{
