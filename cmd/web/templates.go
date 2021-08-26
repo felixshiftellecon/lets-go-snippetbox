@@ -9,12 +9,14 @@ import (
 	"github.com/felixshiftellecon/snippetbox/pkg/models"
 )
 
+// Add a new IsAuthenticated field to the templateData struct.
 type templateData struct {
-	CurrentYear int
-	Flash       string
-	Form        *forms.Form
-	Snippet     *models.Snippet
-	Snippets    []*models.Snippet
+	CurrentYear     int
+	Flash           string
+	Form            *forms.Form
+	IsAuthenticated bool
+	Snippet         *models.Snippet
+	Snippets        []*models.Snippet
 }
 
 func humanDate(t time.Time) string {

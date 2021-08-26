@@ -16,14 +16,20 @@
       <!-- Update the navigation to include signup, login, and logout links -->
       <div>
         <a href='/'>Home</a>
-        <a href='/snippet/create'>Create snippet</a>
+        <!-- Toggle the navigation link -->
+        {{if .IsAuthenticated}}
+          <a href='/snippet/create'>Create snippet</a>
+        {{end}}
       </div>
       <div>
-        <a href='/user/signup'>Sign Up</a>
-        <a href='/user/login'>Log in</a>
-        <form action='/user/logout' method='POST'>
-          <button>Logout</button>
-        </form>
+        {{if .IsAuthenticated}}
+          <form action='/user/logout' method='POST'>
+            <button>Logout</button>
+          </form>
+        {{else}}
+          <a href='/user/signup'>Sign Up</a>
+          <a href='/user/login'>Log in</a>
+        {{end}}
       </div>
     </nav>
     <main>
