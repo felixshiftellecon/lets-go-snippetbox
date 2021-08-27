@@ -13,10 +13,8 @@
       <h1><a href='/'>Snippetbox</a></h1>
     </header>
     <nav>
-      <!-- Update the navigation to include signup, login, and logout links -->
       <div>
         <a href='/'>Home</a>
-        <!-- Toggle the navigation link -->
         {{if .IsAuthenticated}}
           <a href='/snippet/create'>Create snippet</a>
         {{end}}
@@ -24,7 +22,6 @@
       <div>
         {{if .IsAuthenticated}}
           <form action='/user/logout' method='POST'>
-            <!-- Include the CSRF token -->
             <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
             <button>Logout</button>
           </form>

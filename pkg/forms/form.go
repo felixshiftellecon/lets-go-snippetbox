@@ -8,12 +8,6 @@ import (
 	"unicode/utf8"
 )
 
-// Use the regexp.MustCompile() function to parse a pattern and compile
-// regular expression for sanity checking the format of an email address.
-// This returns a *regexp.Regexp object, or panics in the event of an error.
-// Doing this once at runtime, and storing the complied regular expression
-// object in a variable, is more performant than re-compiling the pattern with
-// every request.
 var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 type Form struct {
@@ -47,9 +41,6 @@ func (f *Form) MaxLength(field string, d int) {
 	}
 }
 
-// Implement a MinLength method to check that a specific field in the form
-// contains a minimum number of characters. If the check fails then add the
-// appropriate message to the form errors.
 func (f *Form) MinLength(field string, d int) {
 	value := f.Get(field)
 	if value == "" {
@@ -60,9 +51,6 @@ func (f *Form) MinLength(field string, d int) {
 	}
 }
 
-// Implement a MatchesPattern method to check that a specific field in the form
-// matches a regular expression. If the check fails then add the
-// appropriate message to the form errors.
 func (f *Form) MatchesPattern(field string, pattern *regexp.Regexp) {
 	value := f.Get(field)
 	if value == "" {

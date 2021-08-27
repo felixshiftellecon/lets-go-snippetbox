@@ -16,7 +16,6 @@ import (
 	"github.com/golangcollege/sessions"
 )
 
-// Add a new users field to the application struct
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
@@ -51,8 +50,6 @@ func main() {
 	session.Lifetime = 12 * time.Hour
 	session.Secure = true
 
-	// Initialize a mysql.UserModel instance and add it to the application
-	// dependencies.
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,

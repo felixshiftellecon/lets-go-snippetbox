@@ -9,8 +9,6 @@ import (
 	"github.com/felixshiftellecon/snippetbox/pkg/models"
 )
 
-// Add a new IsAuthenticated field to the templateData struct.
-// Add a new CSRFToken field to the templateData.
 type templateData struct {
 	CSRFToken       string
 	CurrentYear     int
