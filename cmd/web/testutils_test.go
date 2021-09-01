@@ -1,18 +1,57 @@
 package main
 
 import (
+	"html"
 	"io"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"regexp"
 	"testing"
+	"time"
+
+	"github.com/felixshiftellecon/snippetbox/pkg/models/mock"
+	"github.com/golangcollege/sessions"
 )
 
+// Define a regular expression which captures the CSRF token value from the
+// HTML for our user signup page.
+var csrfTokenRX = regexp.MustCompile(`<input type='hidden' name='csrf_token' value='(.+)'>`)
+
+func extractCSRFToken(t *testing.T, body []byte) string {
+	// Use the FindSubmatch method to extract the token from the HTML body.
+	// Note that this returns an array with the entire matched pattern in the
+	// first position, and the values of any capture data in the subsequent
+	// positions.
+	matches := csrfTokenRX.FindSubmatch(body)
+	if len(matches) < 2 {
+		t.Fatal("no crsf token found in body")
+	}
+	return html.UnescapeString(string(matches[1]))
+}
+
 func newTestApplication(t *testing.T) *application {
+	// Create a new instance of the template cache.
+	templateCache, err := newTemplateCache("./../../ui/html/")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a session manager instance, with the same settings as production.
+	session := sessions.New([]byte("3dSm5MnygFHh7XidAtbskXrjbwfoJcbJ"))
+	session.Lifetime = 12 * time.Hour
+	session.Secure = true
+
+	// Initialize the dependencies, using the mocks for the loggers and
+	// database models.
 	return &application{
-		errorLog: log.New(io.Discard, "", 0),
-		infoLog:  log.New(io.Discard, "", 0),
+		errorLog:      log.New(io.Discard, "", 0),
+		infoLog:       log.New(io.Discard, "", 0),
+		session:       session,
+		snippets:      &mock.SnippetModel{},
+		templateCache: templateCache,
+		users:         &mock.UserModel{},
 	}
 }
 
