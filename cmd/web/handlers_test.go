@@ -24,16 +24,11 @@ func TestPing(t *testing.T) {
 }
 
 func TestShowSnippet(t *testing.T) {
-	// Create a new instance of our application struct which uses the mocked
-	// dependencies.
 	app := newTestApplication(t)
 
-	// Establish a new test server for running end-to-end tests.
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	// Set up some table-driven tests to check the responses sent by our
-	// application for different URLs.
 	tests := []struct {
 		name     string
 		urlPath  string
@@ -65,14 +60,10 @@ func TestShowSnippet(t *testing.T) {
 }
 
 func TestSignupUser(t *testing.T) {
-	// Create the application struct containing our mocked dependencies and set
-	// up the test server for running and end-to-end tests
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	// Make a GET /user/signup request and then extract the CSRF token from the
-	// response body.
 	_, _, body := ts.get(t, "/user/signup")
 	csrfToken := extractCSRFToken(t, body)
 

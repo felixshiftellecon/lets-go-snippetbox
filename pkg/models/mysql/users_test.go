@@ -14,6 +14,7 @@ func TestUserModelGet(t *testing.T) {
 		t.Skip("mysql: skipping integration test")
 	}
 
+	// Set up a suite of table-driven tests and expected results
 	tests := []struct {
 		name      string
 		userID    int
@@ -48,17 +49,11 @@ func TestUserModelGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Initialize a connection pool to our test database, and defer a
-			// call to the teardown function, so it is always run immediately
-			// before this sub-test returns.
 			db, teardown := newTestDB(t)
 			defer teardown()
 
-			// Create a new instance of the UserModel.
 			m := UserModel{db}
 
-			// Call the UserModel.Get() method and check that the return value
-			// and error match the expected values for the sub test.
 			user, err := m.Get(tt.userID)
 
 			if err != tt.wantError {

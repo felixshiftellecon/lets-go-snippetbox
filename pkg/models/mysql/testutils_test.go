@@ -7,17 +7,11 @@ import (
 )
 
 func newTestDB(t *testing.T) (*sql.DB, func()) {
-	// Establish a sql.DB connection pool for our test database. Because our
-	// setup and teardown scripts contain multiple SQL statements, we need
-	// to use the `multiStatements=true` parameter in our DSN. This instructs
-	// our MYSQL database driver to support executing multiple SQL statements
-	// in one db.Exec() call.
 	db, err := sql.Open("mysql", "test_web:testing123@/test_snippetbox?parseTime=true&multiStatements=true")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Read the setup SQL script from file and execute the statements.
 	script, err := os.ReadFile("./testdata/setup.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -27,11 +21,6 @@ func newTestDB(t *testing.T) (*sql.DB, func()) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	// Return the connection pool and an anonymous function which reads and
-	// executes the teardown script, and closed the connection pool. We can
-	// assign this anonymous function and call it later once our test has
-	// completed.
 
 	return db, func() {
 		script, err := os.ReadFile("./testdata/teardown.sql")
