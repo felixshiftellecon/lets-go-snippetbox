@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 	"net/url"
+	"regexp"
 	"testing"
 )
 
@@ -59,6 +60,74 @@ func TestShowSnippet(t *testing.T) {
 	}
 }
 
+func TestCreateSnippet(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	_, _, body := ts.get(t, "/user/login")
+	csrfToken := extractCSRFToken(t, body)
+	ts.LoginForTest(t, csrfToken)
+
+	longTitle := ""
+	for i := 0; i < 102; {
+		longTitle = longTitle + "1"
+		i++
+	}
+
+	createdRegex, err := regexp.Compile("/snippet/[0-9]+$")
+	if err != nil {
+		t.Errorf("regex didn't compile")
+	}
+
+	tests := []struct {
+		name       string
+		title      string
+		content    string
+		expires    string
+		csrfToken  string
+		wantCode   int
+		wantBody   []byte
+		wantHeader bool
+	}{
+		{"Valid submission (one day expire)", "validTitle", "validContent", "1", csrfToken, http.StatusSeeOther, []byte(""), true},
+		{"Valid submission (one week expire)", "validTitle", "validContent", "7", csrfToken, http.StatusSeeOther, []byte(""), true},
+		{"Valid submission (one year expire)", "validTitle", "validContent", "365", csrfToken, http.StatusSeeOther, []byte(""), true},
+		{"Empty title", "", "validContent", "1", csrfToken, http.StatusOK, []byte("This field cannot be blank"), false},
+		{"Long Title", longTitle, "validContent", "1", csrfToken, http.StatusOK, []byte("This field is too long (maximum is 100 characters)"), false},
+		{"Empty Content", "validTitle", "", "1", csrfToken, http.StatusOK, []byte("This field cannot be blank"), false},
+		{"Empty Expire", "validTitle", "validContent", "", csrfToken, http.StatusOK, []byte("This field cannot be blank"), false},
+		{"Invalid CSRF Token", "", "", "", "wrongToken", http.StatusBadRequest, nil, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			form := url.Values{}
+			form.Add("title", tt.title)
+			form.Add("content", tt.content)
+			form.Add("expires", tt.expires)
+			form.Add("csrf_token", tt.csrfToken)
+			form.Add("contextKeyIsAuthenticated", "true")
+
+			code, header, body := ts.postForm(t, "/snippet/create", form)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+
+			if tt.wantHeader {
+				if !createdRegex.MatchString(header.Get("location")) {
+					t.Errorf("want header %s to contain %q", header.Get("location"), createdRegex.String())
+				}
+			}
+		})
+	}
+}
+
 func TestSignupUser(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
@@ -103,6 +172,89 @@ func TestSignupUser(t *testing.T) {
 
 			if !bytes.Contains(body, tt.wantBody) {
 				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
+
+func TestLogin(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	_, _, body := ts.get(t, "/user/login")
+	csrfToken := extractCSRFToken(t, body)
+
+	tests := []struct {
+		name         string
+		userEmail    string
+		userPassword string
+		csrfToken    string
+		wantCode     int
+		wantBody     []byte
+	}{
+		{"Valid Credentials", "alice@example.com", "my plain text password", csrfToken, http.StatusSeeOther, nil},
+		{"Empty Email", "", "validPassword", csrfToken, http.StatusOK, []byte("Email or Password is incorrect")},
+		{"Empty Password", "valid@email.com", "", csrfToken, http.StatusOK, []byte("Email or Password is incorrect")},
+		{"Empty Fields", "", "", csrfToken, http.StatusOK, []byte("Email or Password is incorrect")},
+		{"Wrong Credentials", "wrongEmail", "wrongPassword", csrfToken, http.StatusOK, []byte("Email or Password is incorrect")},
+		{"Invalid CSRF Token", "", "", "wrongToken", http.StatusBadRequest, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			form := url.Values{}
+			form.Add("email", tt.userEmail)
+			form.Add("password", tt.userPassword)
+			form.Add("csrf_token", tt.csrfToken)
+
+			code, _, body := ts.postForm(t, "/user/login", form)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
+
+func TestLogout(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	_, _, body := ts.get(t, "/user/login")
+	csrfToken := extractCSRFToken(t, body)
+
+	tests := []struct {
+		name      string
+		csrfToken string
+		login     bool
+		wantCode  int
+	}{
+		{"User logged in", csrfToken, true, http.StatusSeeOther},
+		{"User not logged in", csrfToken, false, http.StatusSeeOther},
+		{"Invalid CSRF Token", "wrongToken", false, http.StatusBadRequest},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.login {
+				_, _, body := ts.get(t, "/user/login")
+				logincsrfToken := extractCSRFToken(t, body)
+				ts.LoginForTest(t, logincsrfToken)
+			}
+
+			form := url.Values{}
+			form.Add("csrf_token", tt.csrfToken)
+
+			code, _, _ := ts.postForm(t, "/user/logout", form)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
 			}
 		})
 	}

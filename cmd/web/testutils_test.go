@@ -94,3 +94,15 @@ func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) (i
 
 	return rs.StatusCode, rs.Header, body
 }
+
+func (ts *testServer) LoginForTest(t *testing.T, csrfToken string) {
+	form := url.Values{}
+	form.Add("csrf_token", csrfToken)
+	form.Add("email", "alice@example.com")
+	form.Add("password", "my plain text password")
+
+	status, _, _ := ts.postForm(t, "/user/login", form)
+	if status != http.StatusSeeOther {
+		t.Errorf("Received code %v while logging in", status)
+	}
+}
