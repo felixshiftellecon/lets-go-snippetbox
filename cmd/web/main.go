@@ -40,7 +40,7 @@ type application struct {
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	dsn := flag.String("dsn", "web:testing123@/snippetbox?parseTime=true", "MySQL data source name")
+	dsn := flag.String("dsn", "web:testing123@tcp(database:3306)/snippetbox?parseTime=true", "MySQL data source name")
 	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret Key")
 	flag.Parse()
 
@@ -51,8 +51,6 @@ func main() {
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-
-	defer db.Close()
 
 	templateCache, err := newTemplateCache("./ui/html/")
 	if err != nil {
