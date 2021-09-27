@@ -95,6 +95,7 @@ jobs:
               - go-mod-v1-
       - run: mkdir -p /tmp/code_coverage/
       - run: mkdir -p /tmp/test-results/
+      - run: sudo apt-get install mysql-client
       - run:
           name: Run Go unit tests with coverage
           command: |
