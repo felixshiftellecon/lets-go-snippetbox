@@ -77,18 +77,15 @@ jobs:
               - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
               - go-mod-v1-{{ checksum "go.mod" }}-
               - go-mod-v1-
-      - run: 
-          name: make test and coverage directories
-          command: |
-                    mkdir -p ${CODE_COVERAGE_RESULTS}
-                    mkdir -p ${TEST_RESULTS}
+      - run: mkdir -p ${CODE_COVERAGE_RESULTS}
+      - run: mkdir -p ${TEST_RESULTS}
       - start_app
       - run: 
           name: Verify database up
           command: |
               until docker inspect -f {{.State.Running}} database
               do sleep 10
-              echo wating for the database...
+              echo waiting for the database...
               done
       - run:
           name: Run Go unit tests with coverage
