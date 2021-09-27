@@ -79,7 +79,7 @@ jobs:
                     go vet ./pkg/forms
                     go vet ./pkg/models
                     go vet ./pkg/models/mock
-                    go vet ./pkg/models/mysql |
+                    go vet ./pkg/models/mysql
   deploy:
     executor: machine_no_dlc
     steps:
