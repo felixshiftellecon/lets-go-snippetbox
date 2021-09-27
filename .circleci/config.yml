@@ -1,5 +1,9 @@
 version: 2.1
 
+environment:
+  TEST_RESULTS: /tmp/test-results
+  CODE_COVERAGE_RESULTS: /tmp/code_coverage/
+
 orbs:
   aws-ecr: circleci/aws-ecr@7.2.0
   slack: circleci/slack@4.4.4
@@ -45,7 +49,14 @@ jobs:
     executor: machine_with_dlc
     steps:
       - checkout
+      - restore_cache:
+          keys:
+              - go-mod-v4-{{ checksum "go.sum" }}
       - build_container
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "./"
 
   lint:
     executor: go_docker
@@ -61,29 +72,31 @@ jobs:
     executor: machine_with_dlc
     steps:
       - checkout
-      - run: mkdir /tmp/code_coverage/
+      - restore_cache:
+          keys:
+              - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
+              - go-mod-v1-{{ checksum "go.mod" }}-
+              - go-mod-v1-
+      - run: 
+          name: make test and coverage directories
+          command: |
+                    mkdir -p $CODE_COVERAGE_RESULTS
+                    mkdir -p $TEST_RESULTS
       - start_app
       - run: 
           name: Verify database up
           command: |
               until docker inspect -f {{.State.Running}} database
               do sleep 10
+              echo wating for the database...
               done
       - run:
-          name: Run cmd/web Go unit tests with coverage
-          command: go test -v ./cmd/web -coverprofile=/tmp/code_coverage/profile.out ./...
+          name: Run Go unit tests with coverage
+          command: |
+                    PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
+                    go test --json ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES -v ./... -coverprofile=/tmp/code_coverage/profile.out ./...
       - store_artifacts:
           path: /tmp/code_coverage/profile.out
-  # code-coverage:
-  #   executor: go_docker
-  #   steps:
-  #     - checkout
-  #     - run: mkdir /tmp/code_coverage/
-  #     - run:
-  #         name: Run code coverage
-  #         command: go test -coverprofile=/tmp/code_coverage/profile.out ./...
-  #     - store_artifacts:
-  #         path: /tmp/code_coverage/profile.out
   go-static-analyzer:
     executor: go_docker
     steps:
