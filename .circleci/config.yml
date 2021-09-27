@@ -87,7 +87,7 @@ jobs:
           name: Run Go unit tests with coverage
           command: |
                     PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-                    go test --json ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES -v ./... -coverprofile=/tmp/code_coverage/profile.out ./...
+                    go test --json /tmp/test-results/gounittest-report.xml -- $PACKAGE_NAMES -v ./... -coverprofile=/tmp/code_coverage/profile.out ./...
       - store_artifacts:
           path: /tmp/code_coverage/profile.out
   go-static-analyzer:
