@@ -22,14 +22,25 @@ executors:
           password: $DOCKER_PASS
 
 commands:
-  start_container_and_verify:
+  build_container:
+    description: Start container and verify
+    steps:
+      - run:
+          name: Build container
+          command: |
+            echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
+            docker-compose build
+  run_container_and_verify:
     description: Start container and verify
     steps:
       - run:
           name: Start container and verify
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
-            docker-compose up
+            docker-compose up -d
+            sleep 10
+            docker inspect -f {{.State.Running}} snippetbox
+
 
 jobs:
   build:
