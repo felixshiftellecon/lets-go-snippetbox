@@ -106,10 +106,6 @@ jobs:
             done
             echo Failed waiting for MySQL && exit 1
       - run:
-          name: Install MySQL CLI
-          command: |
-            sudo apt-get install default-mysql-client
-      - run:
           name: Run Go unit tests with coverage
           command: |
                     PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
