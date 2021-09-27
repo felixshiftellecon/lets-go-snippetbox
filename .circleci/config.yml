@@ -31,10 +31,10 @@ commands:
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose build
   start_container_and_verify:
-    description: Start container and verify
+    description: Start container
     steps:
       - run:
-          name: Start container and verify
+          name: Start container
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose up -d
@@ -62,11 +62,11 @@ jobs:
     steps:
       - checkout
       - run: mkdir /tmp/code_coverage/
-      - start_container_and_verify
+      - start_container
       - run: 
-          name: Run cmd/web Go unit tests with coverage
+          name: Verify database up
           command: |
-              until [ 'docker inspect -f {{.State.Running}} database', true ]
+              until [ docker inspect -f {{.State.Running}} database ]
               do sleep 10
               done
       - run:
