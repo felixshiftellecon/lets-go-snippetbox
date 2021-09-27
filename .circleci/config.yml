@@ -54,18 +54,20 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Run cmd/web Go unit tests
-          command: go test ./cmd/web
-  code-coverage:
-    executor: go_docker
-    steps:
-      - checkout
-      - run: mkdir /tmp/code_coverage/
-      - run:
-          name: Run code coverage
-          command: go test -coverprofile=/tmp/code_coverage/profile.out ./...
+          name: Run cmd/web Go unit tests with coverage
+          command: go test -v ./cmd/web -coverprofile=/tmp/code_coverage/profile.out ./...
       - store_artifacts:
           path: /tmp/code_coverage/profile.out
+  # code-coverage:
+  #   executor: go_docker
+  #   steps:
+  #     - checkout
+  #     - run: mkdir /tmp/code_coverage/
+  #     - run:
+  #         name: Run code coverage
+  #         command: go test -coverprofile=/tmp/code_coverage/profile.out ./...
+  #     - store_artifacts:
+  #         path: /tmp/code_coverage/profile.out
   go-static-analyzer:
     executor: go_docker
     steps:
