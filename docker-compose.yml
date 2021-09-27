@@ -2,7 +2,9 @@ version: '3'
 services:
   db:
     container_name: database
-    build: ./docker/db/
+    build: 
+      dockerfile: ./docker/db/Dockerfile
+    image: felixshift/snippetbox:dblatest
     environment: 
       MYSQL_ROOT_PASSWORD: snippet_root_pass
       MYSQL_DATABASE: snippetbox
@@ -14,6 +16,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/app/Dockerfile
+    image: felixshift/snippetbox:applatest
     ports: 
       - "4000:4000"
     depends_on:

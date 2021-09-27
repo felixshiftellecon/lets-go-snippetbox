@@ -1,0 +1,111 @@
+version: 2.1
+
+orbs:
+  aws-ecr: circleci/aws-ecr@7.2.0
+  slack: circleci/slack@4.4.4
+  go: circleci/go@1.7.0
+
+executors:
+  machine_no_dlc:
+    machine:
+      image: ubuntu-2004:202107-02
+  machine_with_dlc:
+    machine:
+      image: ubuntu-2004:202107-02
+      docker_layer_caching: true
+  go_docker:
+    docker:
+      - image: cimg/go:1.17.1
+        auth: 
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASS
+
+commands:
+  start_container_and_verify:
+    description: Start container and verify
+    steps:
+      - run:
+          name: Start container and verify
+          command: |
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASS
+            docker-compose up -d
+            docker run --network container:snippet \
+              appropriate/curl --retry 10 --retry-delay 1 --retry-connrefused http://localhost:4000 |
+
+jobs:
+  build:
+    executor: machine_no_dlc
+    steps:
+      - checkout
+      - setup_remote_docker
+      - start_container_and_verify
+  lint:
+    executor: go_docker
+    steps:
+      - checkout
+      - run:
+          name: Lint the Go cmd/web
+          command: gofmt -d ./cmd/web
+      - run:
+          name: Lint the Go pkg/
+          command: gofmt -d ./pkg
+  unit-tests:
+    executor: go_docker
+    steps:
+      - checkout
+      - run:
+          name: Run cmd/web Go unit tests
+          command: go test ./cmd/web
+  code-coverage:
+    executor: go_docker
+    steps:
+      - checkout
+      - run:
+          name: Run code coverage
+          command: go test -coverprofile=/tmp/code_coverage/profile.out ./...
+      - store_artifacts:
+          path: /tmp/code_coverage/profile.out
+  go-static-analyzer:
+    executor: go_docker
+    steps:
+      - checkout
+      - run:
+          name: Run static analyzer on cmd/web
+          command: go vet ./cmd/web
+      - run:
+          name: Run static analyzer on pgk
+          command: go vet ./pkg
+  deploy:
+    executor: machine_no_dlc
+    steps:
+      # - push-image:
+      #   - setup-remote-docker
+      #   - repo: #todo create context
+      - run: echo I'm going to deploy I promise
+
+workflows:
+  version: 2
+  build-test-and-deploy:
+    jobs:
+      - lint
+      - code-coverage
+      - go-static-analyzer
+      - build
+      - unit-tests:
+          requires:
+            - lint
+            - go-static-analyzer
+      - cypress/run:
+          store_artifacts: true
+          requires:
+            - build
+            - lint
+            - go-static-analyzer
+      - deploy:
+          requires:
+            - unit-tests
+            - cypress/run
+          filters:
+            branches:
+              only:
+                - main
