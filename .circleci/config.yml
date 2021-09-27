@@ -80,8 +80,8 @@ jobs:
       - run: 
           name: make test and coverage directories
           command: |
-                    mkdir -p "$CODE_COVERAGE_RESULTS"
-                    mkdir -p "$TEST_RESULTS"
+                    mkdir -p ${CODE_COVERAGE_RESULTS}
+                    mkdir -p ${TEST_RESULTS}
       - start_app
       - run: 
           name: Verify database up
