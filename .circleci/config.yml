@@ -38,7 +38,6 @@ jobs:
     executor: machine_no_dlc
     steps:
       - checkout
-      - setup_remote_docker
       - start_container_and_verify
   lint:
     executor: go_docker
@@ -61,6 +60,7 @@ jobs:
     executor: go_docker
     steps:
       - checkout
+      - run: mkdir /tmp/code_coverage/
       - run:
           name: Run code coverage
           command: go test -coverprofile=/tmp/code_coverage/profile.out ./...
@@ -75,7 +75,11 @@ jobs:
           command: go vet ./cmd/web
       - run:
           name: Run static analyzer on pgk
-          command: go vet ./pkg
+          command: |
+                    go vet ./pkg/forms
+                    go vet ./pkg/models
+                    go vet ./pkg/models/mock
+                    go vet ./pkg/models/mysql |
   deploy:
     executor: machine_no_dlc
     steps:
