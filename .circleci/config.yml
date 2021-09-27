@@ -71,6 +71,10 @@ jobs:
           command: gofmt -d ./pkg
   unit-tests:
     executor: go_docker
+    image: circleci/mysql:8.0.3
+    auth: 
+        username: $DOCKER_USERNAME
+        password: $DOCKER_PASS
     steps:
       - checkout
       - restore_cache:
