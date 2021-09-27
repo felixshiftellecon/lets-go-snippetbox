@@ -23,10 +23,18 @@ executors:
   go_docker_and_mysql:
       docker:
         - image: cimg/go:1.17.1
+          auth: 
+            username: $DOCKER_USERNAME
+            password: $DOCKER_PASS
         - image: circleci/mysql:8.0.3
           auth: 
             username: $DOCKER_USERNAME
             password: $DOCKER_PASS
+          environment: 
+            MYSQL_ROOT_PASSWORD: snippet_root_pass
+            MYSQL_DATABASE: snippetbox
+            MYSQL_USER: web
+            MYSQL_PASSWORD: testing123
 
 commands:
   build_container:
