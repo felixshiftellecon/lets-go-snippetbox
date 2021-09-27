@@ -1,9 +1,5 @@
 version: 2.1
 
-environment:
-  TEST_RESULTS: /tmp/test-results
-  CODE_COVERAGE_RESULTS: /tmp/code_coverage/
-
 orbs:
   aws-ecr: circleci/aws-ecr@7.2.0
   slack: circleci/slack@4.4.4
@@ -77,8 +73,8 @@ jobs:
               - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
               - go-mod-v1-{{ checksum "go.mod" }}-
               - go-mod-v1-
-      - run: mkdir -p $CODE_COVERAGE_RESULTS
-      - run: mkdir -p $TEST_RESULTS
+      - run: mkdir -p /tmp/code_coverage/
+      - run: mkdir -p /tmp/test-results/
       - start_app
       - run: 
           name: Verify database up
