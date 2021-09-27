@@ -48,6 +48,7 @@ jobs:
     steps:
       - checkout
       - build_container
+
   lint:
     executor: go_docker
     steps:
@@ -62,6 +63,7 @@ jobs:
     executor: machine_no_dlc
     steps:
       - checkout
+      - run: mkdir /tmp/code_coverage/
       - start_container_and_verify
       - run:
           name: Run cmd/web Go unit tests with coverage
