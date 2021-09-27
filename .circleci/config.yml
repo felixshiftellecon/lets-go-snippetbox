@@ -77,8 +77,8 @@ jobs:
               - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
               - go-mod-v1-{{ checksum "go.mod" }}-
               - go-mod-v1-
-      - run: mkdir -p ${CODE_COVERAGE_RESULTS}
-      - run: mkdir -p ${TEST_RESULTS}
+      - run: mkdir -p $CODE_COVERAGE_RESULTS
+      - run: mkdir -p $TEST_RESULTS
       - start_app
       - run: 
           name: Verify database up
