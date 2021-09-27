@@ -30,7 +30,7 @@ commands:
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose build
-  run_container_and_verify:
+  start_container_and_verify:
     description: Start container and verify
     steps:
       - run:
@@ -47,7 +47,7 @@ jobs:
     executor: machine_no_dlc
     steps:
       - checkout
-      - start_container_and_verify
+      - build_container
   lint:
     executor: go_docker
     steps:
