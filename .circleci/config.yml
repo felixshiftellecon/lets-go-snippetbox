@@ -30,14 +30,21 @@ commands:
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose build
-  start_app:
-    description: Start app
+  start_app_and_verify:
+    description: Start app and verify
     steps:
       - run:
           name: Start app
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose up -d
+      - run: 
+          name: Verify database up
+          command: |
+              until docker inspect -f {{.State.Running}} database
+              do sleep 10
+              echo waiting for the database...
+              done
 
 
 jobs:
@@ -47,12 +54,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-              - go-mod-v4-{{ checksum "go.sum" }}
+              - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
+              - go-mod-v1-{{ checksum "go.mod" }}-
+              - go-mod-v1-
       - build_container
-      - save_cache:
-          key: go-mod-v4-{{ checksum "go.sum" }}
-          paths:
-            - "./"
 
   lint:
     executor: go_docker
@@ -65,7 +70,7 @@ jobs:
           name: Lint the Go pkg/
           command: gofmt -d ./pkg
   unit-tests:
-    executor: machine_with_dlc
+    executor: go_docker
     steps:
       - checkout
       - restore_cache:
@@ -75,21 +80,19 @@ jobs:
               - go-mod-v1-
       - run: mkdir -p /tmp/code_coverage/
       - run: mkdir -p /tmp/test-results/
-      - start_app
-      - run: 
-          name: Verify database up
-          command: |
-              until docker inspect -f {{.State.Running}} database
-              do sleep 10
-              echo waiting for the database...
-              done
       - run:
           name: Run Go unit tests with coverage
           command: |
                     PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
                     gotestsum --junitfile unit-tests.xml /tmp/test-results/gounittest-report.xml -- -coverprofile=/tmp/code_coverage/profile.out ./... $PACKAGE_NAMES
+      - store_test_results:
+          path: /tmp/test-results
       - store_artifacts:
           path: /tmp/code_coverage/profile.out
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "./"
   go-static-analyzer:
     executor: go_docker
     steps:
