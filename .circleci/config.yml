@@ -30,7 +30,7 @@ commands:
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose build
-  start_container_and_verify:
+  start_container:
     description: Start container
     steps:
       - run:
