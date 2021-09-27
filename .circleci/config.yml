@@ -33,7 +33,7 @@ executors:
           environment: 
             MYSQL_ROOT_PASSWORD: snippet_root_pass
             MYSQL_DATABASE: snippetbox
-            MYSQL_USER: web
+            MYSQL_USER: test_web
             MYSQL_PASSWORD: testing123
 
 commands:
@@ -106,10 +106,17 @@ jobs:
             done
             echo Failed waiting for MySQL && exit 1
       - run:
+          name: Create test mysql table and user
+          command: |
+            mysql -u root -p $MYSQL_ROOT_PASSWORD --execute="CREATE DATABASE test_snippetbox CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+            mysql -u root -p $MYSQL_ROOT_PASSWORD --execute="CREATE USER 'test_web'@'localhost';
+            GRANT CREATE, DROP, ALTER, INDEX, SELECT, INSERT, UPDATE, DELETE ON test_snippetbox.* TO 'test_web'@'localhost';
+            ALTER USER 'test_web'@'localhost' IDENTIFIED BY 'pass';"
+      - run:
           name: Run Go unit tests with coverage
           command: |
                     PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-                    gotestsum --junitfile unit-tests-report.xml -- -coverprofile=/tmp/code_coverage/profile.out ./... $PACKAGE_NAMES
+                    gotestsum --junitfile /tmp/test-results/unit-tests-report.xml -- -coverprofile=/tmp/code_coverage/profile.out ./... $PACKAGE_NAMES
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
