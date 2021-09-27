@@ -38,8 +38,6 @@ commands:
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose up -d
-            sleep 10
-            docker inspect -f {{.State.Running}} snippetbox
 
 
 jobs:
@@ -65,9 +63,13 @@ jobs:
       - checkout
       - run: mkdir /tmp/code_coverage/
       - start_container_and_verify
-      - run:
-          name: Run cmd/web Go unit tests with coverage
-          command: go test -v ./cmd/web -coverprofile=/tmp/code_coverage/profile.out ./...
+      - when:
+          condition: 
+            equal: [ 'docker inspect -f {{.State.Running}} database', true ]
+          steps:
+            - run:
+                name: Run cmd/web Go unit tests with coverage
+                command: go test -v ./cmd/web -coverprofile=/tmp/code_coverage/profile.out ./...
       - store_artifacts:
           path: /tmp/code_coverage/profile.out
   # code-coverage:
@@ -117,6 +119,8 @@ workflows:
             - go-static-analyzer
       - cypress/run:
           store_artifacts: true
+          start: docker-compose up -d
+          wait-on: https://localhost:4000
           requires:
             - build
             - lint
