@@ -29,9 +29,7 @@ commands:
           name: Start container and verify
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
-            docker-compose up -d
-            docker run --network container:snippet \
-              appropriate/curl --retry 10 --retry-delay 1 --retry-connrefused http://localhost:4000 |
+            docker-compose up
 
 jobs:
   build:
@@ -101,6 +99,7 @@ workflows:
       - build
       - unit-tests:
           requires:
+            - build
             - lint
             - go-static-analyzer
       - cypress/run:
