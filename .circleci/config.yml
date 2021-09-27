@@ -4,6 +4,7 @@ orbs:
   aws-ecr: circleci/aws-ecr@7.2.0
   slack: circleci/slack@4.4.4
   go: circleci/go@1.7.0
+  cypress: cypress-io/cypress@1.29.0
 
 executors:
   machine_no_dlc:
