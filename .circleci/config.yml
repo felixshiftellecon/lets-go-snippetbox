@@ -63,13 +63,15 @@ jobs:
       - checkout
       - run: mkdir /tmp/code_coverage/
       - start_container_and_verify
-      - when:
-          condition: 
-            equal: [ 'docker inspect -f {{.State.Running}} database', true ]
-          steps:
-            - run:
-                name: Run cmd/web Go unit tests with coverage
-                command: go test -v ./cmd/web -coverprofile=/tmp/code_coverage/profile.out ./...
+      - run: 
+          name: Run cmd/web Go unit tests with coverage
+          command: |
+              until [ 'docker inspect -f {{.State.Running}} database', true ]
+              do sleep 10
+              done
+      - run:
+          name: Run cmd/web Go unit tests with coverage
+          command: go test -v ./cmd/web -coverprofile=/tmp/code_coverage/profile.out ./...
       - store_artifacts:
           path: /tmp/code_coverage/profile.out
   # code-coverage:
@@ -118,6 +120,7 @@ workflows:
             - lint
             - go-static-analyzer
       - cypress/run:
+          executor: machine_no_dlc
           store_artifacts: true
           start: docker-compose up -d
           wait-on: https://localhost:4000
