@@ -95,7 +95,7 @@ workflows:
   build-test-and-deploy:
     jobs:
       - lint
-      - code-coverage
+      # - code-coverage
       - go-static-analyzer
       - build
       - unit-tests:
