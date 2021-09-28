@@ -111,8 +111,8 @@ jobs:
       - run:
           name: Create test mysql table and user
           command: |
-            mysql -h 127.0.0.1 --ssl-mode=DISABLED -u root --p$MYSQL_ROOT_PASSWORD --execute="CREATE DATABASE test_snippetbox CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-            mysql -h 127.0.0.1 --ssl-mode=DISABLED -u root --p$MYSQL_ROOT_PASSWORD --execute="CREATE USER 'test_web'@'localhost'; \
+            mysql -h 127.0.0.1 --ssl-mode=DISABLED -user=root --password=$MYSQL_ROOT_PASSWORD --execute="CREATE DATABASE test_snippetbox CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+            mysql -h 127.0.0.1 --ssl-mode=DISABLED -user=root --password=$MYSQL_ROOT_PASSWORD --execute="CREATE USER 'test_web'@'localhost'; \
             GRANT CREATE, DROP, ALTER, INDEX, SELECT, INSERT, UPDATE, DELETE ON test_snippetbox.* TO 'test_web'@'localhost'; \
             ALTER USER 'test_web'@'localhost' IDENTIFIED BY 'testing123';"
       - run:
@@ -154,15 +154,15 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - lint
-      # - code-coverage
-      - go-static-analyzer
-      - build
-      - unit-tests:
-          requires:
-            - build
-            - lint
-            - go-static-analyzer
+      # - lint
+      # # - code-coverage
+      # - go-static-analyzer
+      # - build
+      - unit-tests
+          # requires:
+          #   - build
+          #   - lint
+          #   - go-static-analyzer
       # - cypress/run:
       #     executor: machine_with_dlc
       #     store_artifacts: true
