@@ -95,6 +95,9 @@ jobs:
               - go-mod-v1-
       - run: mkdir -p /tmp/code_coverage/
       - run: mkdir -p /tmp/test-results/
+      - run: |
+              sudo apt-get update
+              sudo apt-get install default-mysql-client
       - run:
           name: Waiting for MySQL to be ready
           command: |
@@ -160,15 +163,15 @@ workflows:
             - build
             - lint
             - go-static-analyzer
-      - cypress/run:
-          executor: machine_with_dlc
-          store_artifacts: true
-          start: docker-compose up -d
-          wait-on: https://localhost:4000
-          requires:
-            - build
-            - lint
-            - go-static-analyzer
+      # - cypress/run:
+      #     executor: machine_with_dlc
+      #     store_artifacts: true
+      #     start: docker-compose up -d
+      #     wait-on: https://localhost:4000
+      #     requires:
+      #       - build
+      #       - lint
+      #       - go-static-analyzer
       - deploy:
           requires:
             - unit-tests
