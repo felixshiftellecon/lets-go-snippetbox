@@ -191,12 +191,20 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Start container and verify it is working
+          name: Start app
           command: |
             set -x
             docker-compose up -d
-            docker run --network="container:snippetbox" \
-            appropriate/curl --retry 10 --retry-delay 1 --retry-connrefused http://127.0.0.1:4000
+      - run:
+          name: Waiting for app to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z 127.0.0.1 4000 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for app && exit 1
       - run: $(npm bin)/cypress run --record
       - store_artifacts:
           path: ./cypress/videos
