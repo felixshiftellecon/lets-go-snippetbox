@@ -188,13 +188,14 @@ jobs:
             curl -L https://github.com/docker/compose/releases/download/1.25.3/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
             chmod +x ~/docker-compose
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Start container and verify it is working
           command: |
             set -x
             docker-compose up -d
-            docker run --network container:snippetbox \
+            docker run --network="container:snippetbox" \
             appropriate/curl --retry 10 --retry-delay 1 --retry-connrefused http://127.0.0.1:4000
       - run: $(npm bin)/cypress run --record
       - store_artifacts:
