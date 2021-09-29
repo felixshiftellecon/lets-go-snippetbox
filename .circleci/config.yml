@@ -169,10 +169,11 @@ jobs:
             - ~/.npm
             - ~/.cache
       - run: 
-          name: Install sudo
+          name: Install sudo adn netcat
           command: |
             apt-get update
             apt-get install -y sudo
+            apt-get install -y netcat
       - run: ls -al /bin/sh && sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh && ls -al /bin/sh
       - run:
           name: Install Docker client
