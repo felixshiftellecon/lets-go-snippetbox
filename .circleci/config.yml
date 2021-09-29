@@ -162,7 +162,14 @@ jobs:
             docker-compose up -d
       - run:
           name: Waiting for app to be ready
-          command: curl --retry 10 --retry-delay 1 --retry-connrefused localhost:4000 -v
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z 127.0.0.1 4000 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for app && exit 1
       - run: docker run -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
       - store_artifacts:
           path: ./cypress/videos
