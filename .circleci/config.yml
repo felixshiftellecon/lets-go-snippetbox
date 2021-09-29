@@ -38,6 +38,9 @@ executors:
   cypress_docker:
     docker:
       - image: cypress/base:14.16.0
+        auth: 
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASS
         environment:
           TERM: xterm
     working_directory: ~/app
@@ -165,7 +168,9 @@ jobs:
           paths:
             - ~/.npm
             - ~/.cache
-      - run: apt-get install -y sudo
+      - run: |
+          apt-get update
+          apt-get install -y sudo
       - run: ls -al /bin/sh && sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh && ls -al /bin/sh
       - run:
           name: Install Docker Compose
