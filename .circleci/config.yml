@@ -35,6 +35,12 @@ executors:
             MYSQL_DATABASE: snippetbox
             MYSQL_USER: test_web
             MYSQL_PASSWORD: testing123
+  cypress_docker:
+    docker:
+      - image: cypress/base:14.16.0
+        environment:
+          TERM: xterm
+    working_directory: ~/app
 
 commands:
   build_container:
@@ -56,10 +62,10 @@ commands:
       - run: 
           name: Verify database up
           command: |
-              until docker inspect -f {{.State.Running}} database
-              do sleep 10
-              echo waiting for the database...
-              done
+            until docker inspect -f {{.State.Running}} database
+            do sleep 10
+            echo waiting for the database...
+            done
 
 
 jobs:
@@ -69,9 +75,9 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-              - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
-              - go-mod-v1-{{ checksum "go.mod" }}-
-              - go-mod-v1-
+            - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
+            - go-mod-v1-{{ checksum "go.mod" }}-
+            - go-mod-v1-
       - build_container
 
   lint:
@@ -90,14 +96,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-              - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
-              - go-mod-v1-{{ checksum "go.mod" }}-
-              - go-mod-v1-
+            - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
+            - go-mod-v1-{{ checksum "go.mod" }}-
+            - go-mod-v1-
       - run: mkdir -p /tmp/code_coverage/
       - run: mkdir -p /tmp/test-results/
       - run: |
-              sudo apt-get update
-              sudo apt-get install default-mysql-client
+          sudo apt-get update
+          sudo apt-get install default-mysql-client
       - run:
           name: Waiting for MySQL to be ready
           command: |
@@ -118,8 +124,8 @@ jobs:
       - run:
           name: Run Go unit tests with coverage
           command: |
-                    PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-                    gotestsum --junitfile /tmp/test-results/unit-tests-report.xml -- -coverprofile=/tmp/code_coverage/profile.out ./... $PACKAGE_NAMES
+            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
+            gotestsum --junitfile /tmp/test-results/unit-tests-report.xml -- -coverprofile=/tmp/code_coverage/profile.out ./... $PACKAGE_NAMES
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
@@ -138,10 +144,45 @@ jobs:
       - run:
           name: Run static analyzer on pgk
           command: |
-                    go vet ./pkg/forms
-                    go vet ./pkg/models
-                    go vet ./pkg/models/mock
-                    go vet ./pkg/models/mysql
+            go vet ./pkg/forms
+            go vet ./pkg/models
+            go vet ./pkg/models/mock
+            go vet ./pkg/models/mysql
+  cypress-tests:
+    executor: cypress_docker
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cypress-v1-{{ .Branch }}-{{ checksum "package.json" }}
+            - cypress-v1-{ .Branch }}
+            - cypress-v1-
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - save_cache:
+          key: cypress-v1-{{ .Branch }}-{{ checksum "package.json" }}
+          paths:
+            - ~/.npm
+            - ~/.cache
+      - run:
+          name: Install Docker Compose
+          command: |
+            curl -L https://github.com/docker/compose/releases/download/1.25.3/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+            chmod +x ~/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+      - run:
+          name: Start container and verify it is working
+          command: |
+            set -x
+            docker-compose up -d
+            docker run --network container:snippetbox \
+            appropriate/curl --retry 10 --retry-delay 1 --retry-connrefused http://localhost:4000
+      - run: $(npm bin)/cypress run --record
+      - store_artifacts:
+          path: ./cypress/videos
+      - store_artifacts:
+          path: ./cypress/screenshots
   deploy:
     executor: machine_no_dlc
     steps:
@@ -158,24 +199,20 @@ workflows:
       # # - code-coverage
       # - go-static-analyzer
       # - build
-      - unit-tests
+      #- unit-tests
           # requires:
           #   - build
           #   - lint
           #   - go-static-analyzer
-      # - cypress/run:
-      #     executor: machine_with_dlc
-      #     store_artifacts: true
-      #     start: docker-compose up -d
-      #     wait-on: https://localhost:4000
       #     requires:
       #       - build
       #       - lint
       #       - go-static-analyzer
+      - cypress-tests
       # - deploy:
       #     requires:
       #       - unit-tests
-      #       - cypress/run
+      #       - cypress-tests
       #     filters:
       #       branches:
       #         only:
