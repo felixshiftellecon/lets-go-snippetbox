@@ -159,12 +159,12 @@ jobs:
           name: Start app
           command: |
             set -x
-            docker-compose up --build -d
+            docker-compose up -d
       - run: 
           name: Run Cypress tests
           command: |
             sleep 10
-            docker exec -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
+            docker run --network=container:snippetbox -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
       - store_artifacts:
           path: ./cypress/videos
       - store_artifacts:
