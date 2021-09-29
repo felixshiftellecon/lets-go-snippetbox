@@ -164,7 +164,7 @@ jobs:
           name: Waiting for app to be ready
           command: |
                     sleep 10
-                    curl --retry 10 --retry-connrefused --cacert ./tls/cert.pem https://localhost:4000
+                    curl --retry 10 --retry-connrefused --capath ./tls https://localhost:4000
       - run: docker run -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
       - store_artifacts:
           path: ./cypress/videos
