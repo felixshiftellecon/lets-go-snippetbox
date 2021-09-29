@@ -160,6 +160,9 @@ jobs:
           command: |
             set -x
             docker-compose up -d
+      - run:
+          name: Wait for app
+          command: dockerize -wait https://snippetbox:4000 -timeout 1m
       - run: 
           name: Run Cypress tests
           command: |
