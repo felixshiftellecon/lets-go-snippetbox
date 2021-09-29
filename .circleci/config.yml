@@ -169,7 +169,7 @@ jobs:
             - ~/.npm
             - ~/.cache
       - run: 
-          name: Install sudo adn netcat
+          name: Install sudo and netcat
           command: |
             apt-get update
             apt-get install -y sudo
@@ -198,14 +198,7 @@ jobs:
             docker-compose up -d
       - run:
           name: Waiting for app to be ready
-          command: |
-            for i in `seq 1 10`;
-            do
-              nc -z 127.0.0.1 4000 && echo Success && exit 0
-              echo -n .
-              sleep 1
-            done
-            echo Failed waiting for app && exit 1
+          command: docker exec snippetbox curl --retry 10 --retry-connrefused http://localhost:4000
       - run: $(npm bin)/cypress run --record
       - store_artifacts:
           path: ./cypress/videos
