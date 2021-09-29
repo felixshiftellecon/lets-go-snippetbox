@@ -152,45 +152,9 @@ jobs:
             go vet ./pkg/models/mock
             go vet ./pkg/models/mysql
   cypress-tests:
-    executor: cypress_docker
+    executor: machine_with_dlc
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - cypress-v1-{{ .Branch }}-{{ checksum "package.json" }}
-            - cypress-v1-{ .Branch }}
-            - cypress-v1-
-      - run:
-          name: Install Dependencies
-          command: npm ci
-      - save_cache:
-          key: cypress-v1-{{ .Branch }}-{{ checksum "package.json" }}
-          paths:
-            - ~/.npm
-            - ~/.cache
-      - run: 
-          name: Install sudo and netcat
-          command: |
-            apt-get update
-            apt-get install -y sudo
-            apt-get install -y netcat
-      - run: ls -al /bin/sh && sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh && ls -al /bin/sh
-      - run:
-          name: Install Docker client
-          command: |
-            set -x
-            VER="17.03.0-ce"
-            curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            mv /tmp/docker/* /usr/bin
-      - run:
-          name: Install Docker Compose
-          command: |
-            curl -L https://github.com/docker/compose/releases/download/1.25.3/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-            chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
-      - setup_remote_docker:
-          docker_layer_caching: true
       - run:
           name: Start app
           command: |
@@ -198,8 +162,15 @@ jobs:
             docker-compose up -d
       - run:
           name: Waiting for app to be ready
-          command: docker run --network="container:snippetbox" appropriate/curl --retry 10 --retry-connrefused http://localhost:4000
-      - run: $(npm bin)/cypress run --record
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z 127.0.0.1 4000 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+      - run: docker run -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
       - store_artifacts:
           path: ./cypress/videos
       - store_artifacts:
