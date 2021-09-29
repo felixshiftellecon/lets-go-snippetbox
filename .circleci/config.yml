@@ -159,7 +159,7 @@ jobs:
           name: Start app
           command: |
             set -x
-            docker-compose up -d -b
+            docker-compose up --build -d
       - run: 
           name: Run Cypress tests
           command: |
