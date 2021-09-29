@@ -63,26 +63,15 @@ commands:
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose up -d
       - run: 
-          name: Verify database up
+          name: Verify app is up
           command: |
-            until docker inspect -f {{.State.Running}} database
+            until docker inspect -f {{.State.Running}} snippetbox
             do sleep 10
-            echo waiting for the database...
+            echo waiting for the app...
             done
 
 
 jobs:
-  build:
-    executor: machine_with_dlc
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
-            - go-mod-v1-{{ checksum "go.mod" }}-
-            - go-mod-v1-
-      - build_container
-
   lint:
     executor: go_docker
     steps:
@@ -93,6 +82,22 @@ jobs:
       - run:
           name: Lint the Go pkg/
           command: gofmt -d ./pkg
+
+  go-static-analyzer:
+    executor: go_docker
+    steps:
+      - checkout
+      - run:
+          name: Run static analyzer on cmd/web
+          command: go vet ./cmd/web
+      - run:
+          name: Run static analyzer on pgk
+          command: |
+            go vet ./pkg/forms
+            go vet ./pkg/models
+            go vet ./pkg/models/mock
+            go vet ./pkg/models/mysql
+
   unit-tests:
     executor: go_docker_and_mysql
     steps:
@@ -134,32 +139,31 @@ jobs:
       - store_artifacts:
           path: /tmp/code_coverage/profile.out
       - save_cache:
-          key: go-mod-v4-{{ checksum "go.sum" }}
+          key: go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
           paths:
             - "./"
-  go-static-analyzer:
-    executor: go_docker
+
+  build:
+    executor: machine_with_dlc
     steps:
       - checkout
-      - run:
-          name: Run static analyzer on cmd/web
-          command: go vet ./cmd/web
-      - run:
-          name: Run static analyzer on pgk
-          command: |
-            go vet ./pkg/forms
-            go vet ./pkg/models
-            go vet ./pkg/models/mock
-            go vet ./pkg/models/mysql
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
+            - go-mod-v1-{{ checksum "go.mod" }}-
+            - go-mod-v1-
+      - build_container
+
   cypress-tests:
     executor: machine_with_dlc
     steps:
       - checkout
-      - run:
-          name: Start app
-          command: |
-            set -x
-            docker-compose up -d
+      # - run:
+      #     name: Start app
+      #     command: |
+      #       set -x
+      #       docker-compose up -d
+      - start_app_and_verify
       - run: 
           name: Run Cypress tests
           command: |
