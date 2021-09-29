@@ -156,22 +156,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.1
-      - run:
           name: Start app
           command: |
             set -x
             docker-compose up -d
-      - run:
-          name: Wait for app
-          command: dockerize -wait https://snippetbox:4000 -timeout 1m
       - run: 
           name: Run Cypress tests
           command: |
-            sleep 10
+            sleep 30
             docker run --network=container:snippetbox -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
       - store_artifacts:
           path: ./cypress/videos
