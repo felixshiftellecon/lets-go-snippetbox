@@ -172,34 +172,30 @@ jobs:
   deploy:
     executor: machine_no_dlc
     steps:
-      # - push-image:
-      #   - setup-remote-docker
-      #   - repo: #todo create context
       - run: echo I'm going to deploy I promise
 
 workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      # - lint
-      # # - code-coverage
-      # - go-static-analyzer
-      # - build
-      #- unit-tests
-          # requires:
-          #   - build
-          #   - lint
-          #   - go-static-analyzer
-      #     requires:
-      #       - build
-      #       - lint
-      #       - go-static-analyzer
-      - cypress-tests
-      # - deploy:
-      #     requires:
-      #       - unit-tests
-      #       - cypress-tests
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
+      - lint
+      - go-static-analyzer
+      - build:
+          requires:
+              - lint
+              - go-static-analyzer
+      - unit-tests:
+          requires:
+            - lint
+            - go-static-analyzer
+      - cypress-tests:
+          requires:
+            - build
+            - unit-tests
+      - deploy:
+          requires:
+            - cypress-tests
+          filters:
+            branches:
+              only:
+                - main
