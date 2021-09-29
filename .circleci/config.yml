@@ -63,11 +63,11 @@ commands:
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose up -d
       - run: 
-          name: Verify app is up
+          name: Verify database is up
           command: |
-            until docker inspect -f {{.State.Running}} snippetbox
+            until docker inspect -f {{.State.Running}} database
             do sleep 10
-            echo waiting for the app...
+            echo waiting for the database...
             done
 
 
