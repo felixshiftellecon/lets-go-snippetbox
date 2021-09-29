@@ -164,7 +164,7 @@ jobs:
           name: Run Cypress tests
           command: |
             sleep 10
-            docker run -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
+            docker exec -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
       - store_artifacts:
           path: ./cypress/videos
       - store_artifacts:
