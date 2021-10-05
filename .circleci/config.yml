@@ -20,8 +20,12 @@ executors:
         auth: 
           username: $DOCKER_USERNAME
           password: $DOCKER_PASS
-  hadolint:
+  go_docker_and_hadolint:
     docker:
+      - image: cimg/go:1.17.1
+        auth: 
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASS
       - image: hadolint/hadolint:2.7.0-alpine
         auth: 
           username: $DOCKER_USERNAME
@@ -113,7 +117,7 @@ jobs:
             go vet ./pkg/models/mysql
 
   lint_docker:
-    executor: hadolint
+    executor: go_docker_and_hadolint
     steps:
       - checkout
       - run:
