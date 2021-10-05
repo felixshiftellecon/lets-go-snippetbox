@@ -67,7 +67,7 @@ commands:
           command: |
             if [docker inspect -f {{.State.Restarting}} snippetbox]
             then
-              do sleep 5
+              sleep 5
               echo waiting for the database...
             else
               echo database is up!
@@ -161,11 +161,6 @@ jobs:
     executor: machine_with_dlc
     steps:
       - checkout
-      # - run:
-      #     name: Start app
-      #     command: |
-      #       set -x
-      #       docker-compose up -d
       - start_app_and_verify
       - run: 
           name: Run Cypress tests
@@ -183,20 +178,20 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - lint
-      - go-static-analyzer
-      - build:
-          requires:
-              - lint
-              - go-static-analyzer
-      - unit-tests:
-          requires:
-            - lint
-            - go-static-analyzer
-      - cypress-tests:
-          requires:
-            - build
-            - unit-tests
+      # - lint
+      # - go-static-analyzer
+      # - build:
+      #     requires:
+      #         - lint
+      #         - go-static-analyzer
+      # - unit-tests:
+      #     requires:
+      #       - lint
+      #       - go-static-analyzer
+      - cypress-tests
+          # requires:
+          #   - build
+          #   - unit-tests
       - deploy:
           requires:
             - cypress-tests
