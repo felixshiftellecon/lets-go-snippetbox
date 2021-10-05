@@ -82,8 +82,8 @@ commands:
           environment:
             DOCKERIZE_VERSION: v0.3.0
       - run:
-          name: Wait for db
-          command: dockerize -wait tcp://localhost:3306 -timeout 1m
+          name: Wait for snippetbox
+          command: dockerize -wait https://localhost:4000 -timeout 1m
 
 
 jobs:
