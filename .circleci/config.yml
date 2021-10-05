@@ -20,6 +20,12 @@ executors:
         auth: 
           username: $DOCKER_USERNAME
           password: $DOCKER_PASS
+  hadolint:
+    docker:
+      - image: hadolint/hadolint:2.7.0-alpine
+        auth: 
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASS
   go_docker_and_mysql:
       docker:
         - image: cimg/go:1.17.1
@@ -54,6 +60,7 @@ commands:
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose build
+
   start_app_and_verify:
     description: Start app and verify
     steps:
@@ -62,20 +69,6 @@ commands:
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose up -d
-      # - run: 
-      #     name: Verify database is up
-      #     command: |
-      #       status="true";
-      #       echo $status
-      #       while [ "$status" = true ]
-      #         do
-      #           status=$(docker inspect -f {{.State.Restarting}} snippetbox | tr -d "\r\n")
-      #           echo $status
-      #           echo waiting for the database...
-      #           sleep 10
-      #       done
-            
-      #       echo database is up!
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -87,9 +80,18 @@ commands:
                   sleep 10
                   dockerize -wait tcp://localhost:4000 -timeout 1m
 
+    restore_go_cache:
+      description: Restore the go cache
+      steps:
+        - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
+            - go-mod-v1-{{ checksum "go.mod" }}-
+            - go-mod-v1-
+
 
 jobs:
-  lint:
+  go_lint_and_analyze:
     executor: go_docker
     steps:
       - checkout
@@ -99,11 +101,6 @@ jobs:
       - run:
           name: Lint the Go pkg/
           command: gofmt -d ./pkg
-
-  go-static-analyzer:
-    executor: go_docker
-    steps:
-      - checkout
       - run:
           name: Run static analyzer on cmd/web
           command: go vet ./cmd/web
@@ -115,17 +112,29 @@ jobs:
             go vet ./pkg/models/mock
             go vet ./pkg/models/mysql
 
-  unit-tests:
-    executor: go_docker_and_mysql
+  lint_docker:
+    executor: hadolint
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
-            - go-mod-v1-{{ checksum "go.mod" }}-
-            - go-mod-v1-
+      - run:
+          name: Lint Docker-Compose config
+          command: docker compose config -q
+      - run:
+          name: Lint Dockerfiles
+          command: |
+            hadolint ./app/Dockerfile
+            hadolint ./db/Dockerfile
+
+  unit-tests:
+    executor: go_docker_and_mysql
+    environment:
+      TEST_RESULTS: /tmp/test-results
+      CODE_COVERAGE: /tmp/code_coverage
+    steps:
+      - checkout
+      - restore_go_cache
       - run: mkdir -p /tmp/code_coverage/
-      - run: mkdir -p /tmp/test-results/
+      - run: mkdir -p $TEST_RESULTS
       - run: |
           sudo apt-get update
           sudo apt-get install default-mysql-client
@@ -150,11 +159,11 @@ jobs:
           name: Run Go unit tests with coverage
           command: |
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-            gotestsum --junitfile /tmp/test-results/unit-tests-report.xml -- -coverprofile=/tmp/code_coverage/profile.out ./... $PACKAGE_NAMES
+            gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out ./... $PACKAGE_NAMES
       - store_test_results:
-          path: /tmp/test-results
+          path: $TEST_RESULTS
       - store_artifacts:
-          path: /tmp/code_coverage/profile.out
+          path: ${CODE_COVERAGE}/profile.out
       - save_cache:
           key: go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
           paths:
@@ -164,11 +173,7 @@ jobs:
     executor: machine_with_dlc
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
-            - go-mod-v1-{{ checksum "go.mod" }}-
-            - go-mod-v1-
+      - restore_go_cache
       - build_container
 
   cypress-tests:
@@ -176,13 +181,24 @@ jobs:
     steps:
       - checkout
       - start_app_and_verify
+      - restore_cache:
+          keys:
+            - cypress-v1{{ .Branch }}-{{ checksum "package.json" }}
+            - cypress-v1{{ .Branch }}
+            - cypress-v1
       - run: 
           name: Run Cypress tests
           command: docker run --network=container:snippetbox -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
+      - save_cache:
+          key: v1-deps-{{ .Branch }}-{{ checksum "package.json" }}
+          paths:
+            - ~/.npm
+            - ~/.cache
       - store_artifacts:
           path: ./cypress/videos
       - store_artifacts:
           path: ./cypress/screenshots
+
   deploy:
     executor: machine_no_dlc
     steps:
@@ -192,20 +208,20 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      # - lint
-      # - go-static-analyzer
-      # - build:
-      #     requires:
-      #         - lint
-      #         - go-static-analyzer
-      # - unit-tests:
-      #     requires:
-      #       - lint
-      #       - go-static-analyzer
-      - cypress-tests
-          # requires:
-          #   - build
-          #   - unit-tests
+      - go_lint_and_analyze
+      - lint_docker
+      - build:
+          requires:
+              - go_lint_and_analyze
+              - lint_docker
+      - unit-tests:
+          requires:
+            - go_lint_and_analyze
+            - lint_docker
+      - cypress-tests:
+          requires:
+            - build
+            - unit-tests
       - deploy:
           requires:
             - cypress-tests
