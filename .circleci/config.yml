@@ -125,8 +125,8 @@ jobs:
       - run:
           name: Lint Dockerfiles
           command: |
-            docker run --rm -i hadolint/hadolint < ./app/Dockerfile
-            docker run --rm -i hadolint/hadolint < ./db/Dockerfile
+            docker run --rm -i hadolint/hadolint < ./docker/app/Dockerfile
+            docker run --rm -i hadolint/hadolint < ./docker/db/Dockerfile
 
   unit-tests:
     executor: go_docker_and_mysql
