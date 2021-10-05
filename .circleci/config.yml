@@ -130,8 +130,8 @@ jobs:
       - run:
           name: Lint Dockerfiles
           command: |
-            hadolint ./docker/app/Dockerfile --ignore DL3003
-            hadolint ./docker/db/Dockerfile --ignore DL3003
+            hadolint ./docker/app/Dockerfile --ignore DL3003,DL3059
+            hadolint ./docker/db/Dockerfile --ignore DL3003,DL3059
 
 
   unit-tests:
