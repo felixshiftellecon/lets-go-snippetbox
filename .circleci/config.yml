@@ -127,8 +127,8 @@ jobs:
       - run:
           name: Lint Dockerfiles
           command: |
-            docker run --rm -i -v .hadolint.yaml:/bin/hadolint.yaml -e XDG_CONFIG_HOME=/bin hadolint/hadolint < ./docker/app/Dockerfile
-            docker run --rm -i -v .hadolint.yaml:/bin/hadolint.yaml -e XDG_CONFIG_HOME=/bin hadolint/hadolint < ./docker/db/Dockerfile
+            docker run --rm -i -v ${PWD}/.hadolint.yaml:/bin/hadolint.yaml -e XDG_CONFIG_HOME=/bin hadolint/hadolint < ./docker/app/Dockerfile
+            docker run --rm -i -v ${PWD}/.hadolint.yaml:/bin/hadolint.yaml -e XDG_CONFIG_HOME=/bin hadolint/hadolint < ./docker/db/Dockerfile
 
   unit-tests:
     executor: go_docker_and_mysql
