@@ -66,12 +66,13 @@ commands:
           name: Verify database is up
           command: |
             status="true";
+            echo $status
             while [ "$status" = true ]
               do
                 status=$(docker inspect -f {{.State.Restarting}} snippetbox | tr -d "\r\n")
                 echo $status
                 echo waiting for the database...
-                sleep 5
+                sleep 10
             done
             
             echo database is up!
