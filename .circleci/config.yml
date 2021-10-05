@@ -83,7 +83,7 @@ commands:
             DOCKERIZE_VERSION: v0.3.0
       - run:
           name: Wait for snippetbox
-          command: dockerize -wait https://localhost:4000 -timeout 1m
+          command: dockerize -wait https://snippetbox:4000 -timeout 1m
 
 
 jobs:
