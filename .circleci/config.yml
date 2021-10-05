@@ -65,7 +65,7 @@ commands:
       - run: 
           name: Verify database is up
           command: |
-            if [docker inspect -f {{.State.Restarting}} snippetbox]
+            if docker inspect -f {{.State.Restarting}} snippetbox
             then
               sleep 5
               echo waiting for the database...
