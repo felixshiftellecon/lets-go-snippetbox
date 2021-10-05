@@ -121,7 +121,7 @@ jobs:
           command: sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
       - run:
           name: Lint Docker-Compose config
-          command: docker compose config -q
+          command: docker-compose config -q
       - run:
           name: Lint Dockerfiles
           command: |
