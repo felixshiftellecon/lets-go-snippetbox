@@ -112,7 +112,7 @@ jobs:
             go vet ./pkg/models/mock
             go vet ./pkg/models/mysql
 
-  lint_docker:
+  lint_docker_compose:
     executor: go_docker
     steps:
       - checkout
@@ -122,13 +122,17 @@ jobs:
       - run:
           name: Lint Docker-Compose config
           command: docker-compose config -q
-      - setup_remote_docker:
-          version: 19.03.13
+
+  lint_dockerfiles:
+    executor: hadolint
+    steps:
+      - checkout
       - run:
           name: Lint Dockerfiles
           command: |
-            docker run --rm -i -v /.hadolint.yaml:/bin/hadolint.yaml -e XDG_CONFIG_HOME=/bin hadolint/hadolint < ./docker/app/Dockerfile
-            docker run --rm -i -v /.hadolint.yaml:/bin/hadolint.yaml -e XDG_CONFIG_HOME=/bin hadolint/hadolint < ./docker/db/Dockerfile
+            hadolint ./docker/app/Dockerfile -ignore DL3003
+            hadolint ./docker/db/Dockerfile -ignore DL3003
+
 
   unit-tests:
     executor: go_docker_and_mysql
@@ -214,15 +218,18 @@ workflows:
   build-test-and-deploy:
     jobs:
       - go_lint_and_analyze
-      - lint_docker
+      - lint_docker_compose
+      - lint_dockerfiles
       - build:
           requires:
               - go_lint_and_analyze
-              - lint_docker
+              - lint_docker_compose
+              - lint_dockerfiles
       - unit-tests:
           requires:
             - go_lint_and_analyze
-            - lint_docker
+            - lint_docker_compose
+            - lint_dockerfiles
       - cypress-tests:
           requires:
             - build
