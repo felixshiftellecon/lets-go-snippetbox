@@ -113,23 +113,20 @@ jobs:
             go vet ./pkg/models/mysql
 
   lint_docker:
-    executor: hadolint
+    executor: go_docker
     steps:
       - checkout
       - run:
-          name: Install curl
-          command: apt-get update; apt-get install curl
-      - run:
           name: Install Docker compose
-          command: curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          command: sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
       - run:
           name: Lint Docker-Compose config
           command: docker compose config -q
       - run:
           name: Lint Dockerfiles
           command: |
-            hadolint ./app/Dockerfile
-            hadolint ./db/Dockerfile
+            docker run --rm -i hadolint/hadolint < ./app/Dockerfile
+            docker run --rm -i hadolint/hadolint < ./db/Dockerfile
 
   unit-tests:
     executor: go_docker_and_mysql
