@@ -7,9 +7,6 @@ orbs:
   cypress: cypress-io/cypress@1.29.0
 
 executors:
-  machine_no_dlc:
-    machine:
-      image: ubuntu-2004:202107-02
   machine_with_dlc:
     machine:
       image: ubuntu-2004:202107-02
@@ -211,9 +208,17 @@ jobs:
           path: ./cypress/screenshots
 
   deploy:
-    executor: machine_no_dlc
+    executor: machine_with_dlc
     steps:
-      - run: echo I'm going to deploy I promise
+      - checkout
+      - restore_go_cache
+      - run:
+          name: Build app and db
+          command: docker-compose build
+      - run:
+          name: Push images to dockerhub
+          command: docker-compose push
+
 
 workflows:
   version: 2
@@ -239,7 +244,7 @@ workflows:
       - deploy:
           requires:
             - cypress-tests
-          filters:
-            branches:
-              only:
-                - main
+          # filters:
+          #   branches:
+          #     only:
+          #       - main
