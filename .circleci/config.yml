@@ -62,20 +62,28 @@ commands:
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose up -d
-      - run: 
-          name: Verify database is up
-          command: |
-            status="true";
-            echo $status
-            while [ "$status" = true ]
-              do
-                status=$(docker inspect -f {{.State.Restarting}} snippetbox | tr -d "\r\n")
-                echo $status
-                echo waiting for the database...
-                sleep 10
-            done
+      # - run: 
+      #     name: Verify database is up
+      #     command: |
+      #       status="true";
+      #       echo $status
+      #       while [ "$status" = true ]
+      #         do
+      #           status=$(docker inspect -f {{.State.Restarting}} snippetbox | tr -d "\r\n")
+      #           echo $status
+      #           echo waiting for the database...
+      #           sleep 10
+      #       done
             
-            echo database is up!
+      #       echo database is up!
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+      - run:
+          name: Wait for db
+          command: dockerize -wait tcp://localhost:3306 -timeout 1m
 
 
 jobs:
