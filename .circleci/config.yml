@@ -80,10 +80,10 @@ commands:
                   sleep 10
                   dockerize -wait tcp://localhost:4000 -timeout 1m
 
-    restore_go_cache:
-      description: Restore the go cache
-      steps:
-        - restore_cache:
+  restore_go_cache:
+    description: Restore the go cache
+    steps:
+      - restore_cache:
           keys:
             - go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
             - go-mod-v1-{{ checksum "go.mod" }}-
