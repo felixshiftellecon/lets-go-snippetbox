@@ -57,7 +57,6 @@ commands:
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose build
-
   start_app_and_verify:
     description: Start app and verify
     steps:
@@ -76,7 +75,6 @@ commands:
           command: |
                   sleep 10
                   dockerize -wait tcp://localhost:4000 -timeout 1m
-
   restore_go_cache:
     description: Restore the go cache
     steps:
@@ -108,7 +106,6 @@ jobs:
             go vet ./pkg/models
             go vet ./pkg/models/mock
             go vet ./pkg/models/mysql
-
   lint_docker_compose:
     executor: go_docker
     steps:
@@ -129,11 +126,9 @@ jobs:
           command: |
             hadolint ./docker/app/Dockerfile --ignore DL3003 --ignore DL3059
             hadolint ./docker/db/Dockerfile --ignore DL3003 --ignore DL3059
-
-
   unit-tests:
     executor: go_docker_and_mysql
-    parallelism: 4
+    parallelism: 2
     working_directory: ~/project
     environment:
       TEST_RESULTS: /tmp/test-results
@@ -196,7 +191,7 @@ jobs:
             - cypress-v2
       - run: 
           name: Run Cypress tests
-          command: docker run --network=container:snippetbox -it -v $PWD:/cypress/integration -w /cypress/integration cypress/included:3.2.0
+          command: docker run --network=container:snippetbox -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
       - save_cache:
           key: cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
           paths:
