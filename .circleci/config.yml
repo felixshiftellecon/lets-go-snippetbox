@@ -240,7 +240,7 @@ workflows:
             - lint_docker_compose
             - lint_dockerfiles
       - cypress/run:
-          name: cypress-test
+          name: cypress-tests
           executor: machine_with_dlc
           parallel: true
           parallelism: 2
