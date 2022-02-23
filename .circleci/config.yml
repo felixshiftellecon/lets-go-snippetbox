@@ -133,7 +133,7 @@ jobs:
 
   unit-tests:
     executor: go_docker_and_mysql
-    parallelism: 2
+    parallelism: 4
     working_directory: ~/project
     environment:
       TEST_RESULTS: /tmp/test-results
@@ -196,7 +196,7 @@ jobs:
             - cypress-v2
       - run: 
           name: Run Cypress tests
-          command: docker run --network=container:snippetbox -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
+          command: docker run --network=container:snippetbox -it -v $PWD:cypress/integration -w cypress/integration cypress/included:3.2.0
       - save_cache:
           key: cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
           paths:
