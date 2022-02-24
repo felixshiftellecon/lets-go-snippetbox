@@ -239,10 +239,7 @@ workflows:
             - go_lint_and_analyze
             - lint_docker_compose
             - lint_dockerfiles
-      - cypress/install:
-          post-checkout: 
-            - run: rm -rf node_modules
-          yarn: true
+      - cypress/install
       - cypress/run:
           name: cypress-tests
           executor: machine_with_dlc
@@ -263,7 +260,6 @@ workflows:
                   - cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
                   - cypress-v2{{ .Branch }}
                   - cypress-v2
-            - run: yarn cypress install
             - save_cache:
                 key: cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
                 paths:
@@ -272,10 +268,8 @@ workflows:
           post-steps:
             - store_test_results:
                 path: test-results
-          start: yarn start
-          yarn: true
           record: true
-          command: yarn cypress run --spec $(cat /tmp/tests.txt)
+          command: npx cypress run --spec $(cat /tmp/tests.txt)
       - deploy:
           requires:
             - cypress-tests
