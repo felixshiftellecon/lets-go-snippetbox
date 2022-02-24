@@ -240,6 +240,8 @@ workflows:
             - lint_docker_compose
             - lint_dockerfiles
       - cypress/install:
+          post-checkout: 
+            - run: rm -rf node_modules
           yarn: true
       - cypress/run:
           name: cypress-tests
