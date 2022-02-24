@@ -267,10 +267,10 @@ workflows:
           post-steps:
             - store_test_results:
                 path: test-results
+          install-command: yarn install --frozen-lockfile
           no-workspace: true
           yarn: true
           record: true
-          start: yarn start
           command: yarn cypress run --spec $(cat /tmp/tests.txt)
       - deploy:
           requires:
