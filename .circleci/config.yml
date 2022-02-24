@@ -272,7 +272,7 @@ workflows:
             - store_test_results:
                 path: test-results
           record: true
-          command: npx cypress run --spec "$(cat /tmp/tests.txt)"
+          command: npx cypress run --spec $(cat /tmp/tests.txt)
       - deploy:
           requires:
             - cypress-tests
