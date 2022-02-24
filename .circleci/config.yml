@@ -269,6 +269,7 @@ workflows:
           post-steps:
             - store_test_results:
                 path: test-results
+          start: yarn start
           yarn: true
           record: true
           command: yarn cypress run --spec $(cat /tmp/tests.txt)
