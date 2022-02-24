@@ -239,7 +239,8 @@ workflows:
             - go_lint_and_analyze
             - lint_docker_compose
             - lint_dockerfiles
-      - cypress/install
+      - cypress/install:
+          yarn: true
       - cypress/run:
           name: cypress-tests
           executor: machine_with_dlc
@@ -269,7 +270,6 @@ workflows:
           post-steps:
             - store_test_results:
                 path: test-results
-          start: yarn start
           yarn: true
           record: true
           command: yarn cypress run --spec $(cat /tmp/tests.txt)
