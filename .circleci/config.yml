@@ -252,7 +252,7 @@ workflows:
           pre-steps:
             - checkout
             - run:
-                'circleci tests glob "/**/**/*.spec.js" | circleci tests split >
+                'circleci tests glob "**/**/*.spec.js" | circleci tests split >
                 /tmp/tests.txt'
             - run: |
                     sudo apt-get update
