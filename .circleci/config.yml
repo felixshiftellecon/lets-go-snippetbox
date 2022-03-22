@@ -197,10 +197,10 @@ jobs:
           name: Build app and db
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
-            docker-compose build -t 660990364978.dkr.ecr.us-east-2.amazonaws.com/nicks-testing:latest
+            docker build -t 660990364978.dkr.ecr.us-east-2.amazonaws.com/nicks-testing:latest ./docker/app/Dockerfile
       - run:
           name: Push images to dockerhub
-          command: docker-compose push 660990364978.dkr.ecr.us-east-2.amazonaws.com/nicks-testing:latest
+          command: docker push 660990364978.dkr.ecr.us-east-2.amazonaws.com/nicks-testing:latest
 
 workflows:
   build-test-and-deploy:
