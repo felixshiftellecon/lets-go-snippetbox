@@ -197,7 +197,8 @@ jobs:
           name: Build app and db
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
-            docker build -t nicks-testing ./docker/app/Dockerfile
+            cd docker/app/
+            docker build -t nicks-testing .
       - run: docker tag nicks-testing:latest 660990364978.dkr.ecr.us-east-2.amazonaws.com/nicks-testing:latest
       - run:
           name: Push images to dockerhub
