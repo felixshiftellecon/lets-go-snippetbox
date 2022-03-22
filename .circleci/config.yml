@@ -214,7 +214,7 @@ jobs:
     steps:
       - checkout
       - restore_go_cache
-      - - aws-cli/install
+      - aws-cli/install
       - run: aws sts assume-role-with-web-identity --role-arn "arn:aws:iam::660990364978:role/BasicEng" --role-session-name Nick-S-test --web-identity-token $CIRCLE_OIDC_TOKEN
       - run:
           name: Build app and db
@@ -249,9 +249,9 @@ workflows:
             - unit-tests
       - deploy:
           requires:
-            - cypress-tests:
-                context:
-                  - hello-context
+            - cypress-tests
+          context:
+            - hello-context
           # filters:
           #   branches:
           #     only:
