@@ -186,29 +186,6 @@ jobs:
       - restore_go_cache
       - build_container
 
-  cypress-tests:
-    executor: machine_with_dlc
-    steps:
-      - checkout
-      - start_app_and_verify
-      - restore_cache:
-          keys:
-            - cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
-            - cypress-v2{{ .Branch }}
-            - cypress-v2
-      - run: 
-          name: Run Cypress tests
-          command: docker run --network=container:snippetbox -it -v $PWD:/e2e -w /e2e cypress/included:3.2.0
-      - save_cache:
-          key: cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
-          paths:
-            - ~/.npm
-            - ~/.cache
-      - store_artifacts:
-          path: ./cypress/videos
-      - store_artifacts:
-          path: ./cypress/screenshots
-
   deploy:
     executor: machine_with_dlc
     steps:
@@ -225,9 +202,7 @@ jobs:
           name: Push images to dockerhub
           command: docker-compose push 660990364978.dkr.ecr.us-east-2.amazonaws.com/nicks-testing:latest
 
-
 workflows:
-  version: 2
   build-test-and-deploy:
     jobs:
       - go_lint_and_analyze
@@ -243,10 +218,40 @@ workflows:
             - go_lint_and_analyze
             - lint_docker_compose
             - lint_dockerfiles
-      - cypress-tests:
+      - cypress/install
+      - cypress/run:
+          name: cypress-tests
+          executor: machine_with_dlc
+          parallel: true
+          parallelism: 2
           requires:
             - build
             - unit-tests
+            - cypress/install
+          pre-steps:
+            - checkout
+            - run:
+                'circleci tests glob "**/**/*.spec.js" | circleci tests split >
+                /tmp/tests.txt'
+            - run: |
+                    sudo apt-get update
+                    sudo apt-get install -y libgbm-dev
+            - start_app_and_verify
+            - restore_cache:
+                keys:
+                  - cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
+                  - cypress-v2{{ .Branch }}
+                  - cypress-v2
+            - save_cache:
+                key: cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
+                paths:
+                  - ~/.npm
+                  - ~/.cache
+          post-steps:
+            - store_test_results:
+                path: test-results
+          record: true
+          command: npx cypress run --spec $(cat /tmp/tests.txt)
       - deploy:
           requires:
             - cypress-tests
