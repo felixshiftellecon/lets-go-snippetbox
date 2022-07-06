@@ -234,7 +234,7 @@ workflows:
               - go_lint_and_analyze
               - lint_docker_compose
               - lint_dockerfiles
-      - unit-tests:
+      - unit-tests
           # requires:
           #   - go_lint_and_analyze
           #   - lint_docker_compose
