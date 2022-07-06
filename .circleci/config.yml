@@ -133,7 +133,7 @@ jobs:
 
   unit-tests:
     executor: go_docker_and_mysql
-    parallelism: 2
+    # parallelism: 2
     working_directory: ~/project
     environment:
       TEST_RESULTS: /tmp/test-results
