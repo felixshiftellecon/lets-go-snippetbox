@@ -235,10 +235,10 @@ workflows:
               - lint_docker_compose
               - lint_dockerfiles
       - unit-tests:
-          requires:
-            - go_lint_and_analyze
-            - lint_docker_compose
-            - lint_dockerfiles
+          # requires:
+          #   - go_lint_and_analyze
+          #   - lint_docker_compose
+          #   - lint_dockerfiles
       - cypress-tests:
           requires:
             - build
