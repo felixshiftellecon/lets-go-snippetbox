@@ -166,7 +166,7 @@ jobs:
       - run:
           name: Run Go unit tests with coverage
           command: |
-            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
+            PACKAGE_NAMES=$(go list ./... | circleci tests split --total=10 --split-by=timings --timings-type=classname)
             gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out ./... $PACKAGE_NAMES
       - store_test_results:
           path: /tmp/test-results
