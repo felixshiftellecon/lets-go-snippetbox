@@ -256,7 +256,7 @@ workflows:
             - store_test_results:
                 path: test-results
           record: true
-          command: npx cypress run --spec $(cat /tmp/tests.txt)
+          command: circleci tests run --command="npx cypress run --spec $(cat /tmp/tests.txt)" --fail-fast --batch-count=2
           attach-workspace: true
           no-workspace: true
       - deploy:
