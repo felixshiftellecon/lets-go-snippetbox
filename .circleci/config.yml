@@ -259,7 +259,7 @@ workflows:
           command: |
                     cat /tmp/tests.txt | \
                     circleci tests run --command="xargs npx cypress run" \
-                    --fail-fast --batch-count=2 --test-results-path=/home/circleci/project/test-results
+                    --fail-fast --batch-count=2 --test-results-path=/home/circleci/project/test-results --split-by=name
           attach-workspace: true
           no-workspace: true
       - deploy:
