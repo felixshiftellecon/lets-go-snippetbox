@@ -256,9 +256,8 @@ workflows:
             - store_test_results:
                 path: test-results
           record: true
-          # npx cypress run --spec '${TESTS}
           command: |
-                    TESTS=$(circleci tests glob "**/**/*.spec.js")
+                    TESTS=$(circleci tests glob "**/**/*.spec.js" | circleci tests split)
                     echo $TESTS | \
                     circleci tests run --command="xargs npx cypress run" \
                     --fail-fast --batch-count=2 --test-results-path=/home/circleci/project/test-results
