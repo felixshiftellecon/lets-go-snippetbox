@@ -152,10 +152,9 @@ jobs:
       - run:
           name: Run Go unit tests with coverage
           command: |
-            TESTS=$(circleci tests glob "cmd/web/*_test.go" | circleci tests split --split-by=timings)
-            echo $TESTS | \
-            circleci tests run --split-by=timings --fail-fast --batch-count=3 --verbose --test-results-path="${TEST_RESULTS}" \
-            --command="gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out --raw-command -- echo"
+            go list ./... | circleci tests run 
+            --split-by=timings --fail-fast --batch-count=3 --verbose --test-results-path="${TEST_RESULTS}"
+            --command="xargs gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out"
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
