@@ -235,9 +235,9 @@ workflows:
             - cypress/install
           pre-steps:
             - checkout
-            # - run:
-            #     'circleci tests glob "**/**/*.spec.js" | circleci tests split >
-            #     /tmp/tests.txt'
+            - run:
+                'circleci tests glob "**/**/*.spec.js" | circleci tests split >
+                /tmp/tests.txt'
             - run: |
                     sudo apt-get update
                     sudo apt-get install -y libgbm-dev
@@ -257,8 +257,7 @@ workflows:
                 path: test-results
           record: true
           command: |
-                    TESTS=$(circleci tests glob "**/**/*.spec.js" | circleci tests split)
-                    echo $TESTS | \
+                    cat /tmp/tests.txt | \
                     circleci tests run --command="xargs npx cypress run" \
                     --fail-fast --batch-count=2 --test-results-path=/home/circleci/project/test-results
           attach-workspace: true
