@@ -228,16 +228,14 @@ workflows:
           name: cypress-tests
           executor: machine_with_dlc
           parallel: true
-          parallelism: 3
+          parallelism: 2
           requires:
             - build
             - unit-tests
             - cypress/install
           pre-steps:
             - checkout
-            - run:
-                'circleci tests glob "**/**/*.spec.js" | circleci tests split >
-                /tmp/tests.txt'
+            - run: circleci tests glob "**/**/*.spec.js" | circleci tests split > /tmp/tests.txt
             - run: |
                     sudo apt-get update
                     sudo apt-get install -y libgbm-dev
@@ -258,7 +256,7 @@ workflows:
           record: true
           command: |
                     cat /tmp/tests.txt | \
-                    circleci tests run --command="xargs npx cypress run" \
+                    circleci tests run --command="xargs npx cypress run --spec" \
                     --fail-fast --batch-count=2 --test-results-path=/home/circleci/project/test-results --split-by=name
           attach-workspace: true
           no-workspace: true
