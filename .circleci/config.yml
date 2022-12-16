@@ -259,7 +259,7 @@ workflows:
           # npx cypress run --spec '${TESTS}
           command: |
                     TESTS=$(circleci tests glob "**/**/*.spec.js" | circleci tests split)
-                    circleci tests run --command="npx cypress run --spec '${TESTS}'" \
+                    circleci tests run --command="npx cypress run --spec $TESTS" \
                     --fail-fast --batch-count=2 --test-results-path=/home/circleci/project/test-results
           attach-workspace: true
           no-workspace: true
