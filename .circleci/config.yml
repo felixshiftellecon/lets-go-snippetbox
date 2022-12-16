@@ -11,6 +11,7 @@ executors:
     machine:
       image: ubuntu-2204:2022.10.2
       docker_layer_caching: true
+    working_directory: /mnt/ramdisk
   go_docker:
     docker:
       - image: cimg/go:1.17.1
@@ -229,7 +230,6 @@ workflows:
           executor: machine_with_dlc
           parallel: true
           parallelism: 3
-          working_directory: /mnt/ramdisk
           requires:
             - build
             - unit-tests
