@@ -11,7 +11,6 @@ executors:
     machine:
       image: ubuntu-2204:2022.10.2
       docker_layer_caching: true
-    working_directory: /mnt/ramdisk
   go_docker:
     docker:
       - image: cimg/go:1.17.1
@@ -258,6 +257,8 @@ workflows:
                 path: test-results
           record: true
           command: npx cypress run --spec $(cat /tmp/tests.txt)
+          attach-workspace: true
+          no-workspace: true
       - deploy:
           requires:
             - cypress-tests
