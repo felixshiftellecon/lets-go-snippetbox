@@ -155,7 +155,7 @@ jobs:
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings)
             echo $PACKAGE_NAMES | \
             circleci tests run --split-by=timings --fail-fast --batch-count=3 --verbose --test-results-path="${TEST_RESULTS}" \
-            --command="gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out --raw-command -- circleci tests run"
+            --command="gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out --raw-command -- echo"
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
