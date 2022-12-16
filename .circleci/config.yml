@@ -256,9 +256,11 @@ workflows:
             - store_test_results:
                 path: test-results
           record: true
+          # npx cypress run --spec '${TESTS}
           command: |
                     TESTS=$(circleci tests glob "**/**/*.spec.js")
-                    circleci tests run --command="npx cypress run --spec '${TESTS}'" \
+                    echo $TESTS | \
+                    circleci tests run --command="xarg npx cypress run" \
                     --fail-fast --batch-count=2 --test-results-path=/home/circleci/project/test-results
           attach-workspace: true
           no-workspace: true
