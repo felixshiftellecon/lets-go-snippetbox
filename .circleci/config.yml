@@ -228,7 +228,6 @@ workflows:
             - go_lint_and_analyze
             - lint_docker_compose
             - docker/hadolint
-            - lint_dockerfiles
       - cypress/install
       - cypress/run:
           name: cypress-tests
