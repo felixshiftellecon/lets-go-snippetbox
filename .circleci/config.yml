@@ -5,11 +5,12 @@ orbs:
   slack: circleci/slack@4.4.4
   go: circleci/go@1.7.0
   cypress: cypress-io/cypress@1.29.0
+  docker: circleci/docker@2.2.0
 
 executors:
   machine_with_dlc:
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2204:2022.10.2
       docker_layer_caching: true
   go_docker:
     docker:
@@ -116,16 +117,6 @@ jobs:
       - run:
           name: Lint Docker-Compose config
           command: docker-compose config -q
-
-  lint_dockerfiles:
-    executor: hadolint
-    steps:
-      - checkout
-      - run:
-          name: Lint Dockerfiles
-          command: |
-            hadolint ./docker/app/Dockerfile --ignore DL3003 --ignore DL3059
-            hadolint ./docker/db/Dockerfile --ignore DL3003 --ignore DL3059
   unit-tests:
     executor: go_docker_and_mysql
     parallelism: 2
@@ -218,22 +209,25 @@ jobs:
 
 
 workflows:
-  version: 2
   build-test-and-deploy:
     jobs:
       - go_lint_and_analyze
       - lint_docker_compose
-      - lint_dockerfiles
+      - docker/hadolint:
+          dockerfiles: ./docker/app/Dockerfile:./docker/db/Dockerfile
+          executor-class: medium
+          hadolint-tag: 2.2.0-debian
+          ignore-rules: 'DL3003,DL3059'
       - build:
           requires:
               - go_lint_and_analyze
               - lint_docker_compose
-              - lint_dockerfiles
+              - docker/hadolint
       - unit-tests:
           requires:
             - go_lint_and_analyze
             - lint_docker_compose
-            - lint_dockerfiles
+            - docker/hadolint
       - cypress/install
       - cypress/run:
           name: cypress-tests
@@ -271,7 +265,9 @@ workflows:
       - deploy:
           requires:
             - cypress-tests
-          # filters:
-          #   branches:
-          #     only:
-          #       - main
+          filters:
+            branches:
+              only:
+                - main
+
+# VS Code Extension Version: 1.4.0
