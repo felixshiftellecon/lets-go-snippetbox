@@ -226,12 +226,12 @@ workflows:
           requires:
               - go_lint_and_analyze
               - lint_docker_compose
-              - lint_dockerfiles
+              - docker/hadolint
       - unit-tests:
           requires:
             - go_lint_and_analyze
             - lint_docker_compose
-            - lint_dockerfiles
+            - docker/hadolint
       - cypress-tests:
           requires:
             - build
