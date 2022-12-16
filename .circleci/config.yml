@@ -228,7 +228,7 @@ workflows:
           name: cypress-tests
           executor: machine_with_dlc
           parallel: true
-          parallelism: 2
+          parallelism: 3
           requires:
             - build
             - unit-tests
