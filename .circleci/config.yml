@@ -236,7 +236,7 @@ workflows:
           pre-steps:
             - checkout
             - run: |
-                    circleci tests glob "**/**/*.spec.js" | circleci tests split > /tmp/tests.txt
+                    circleci tests glob "cypress/integration/*.spec.js" | circleci tests split > /tmp/tests.txt
                     cat /tmp/tests.txt
             - run: |
                     sudo apt-get update
