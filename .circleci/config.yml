@@ -30,7 +30,7 @@ executors:
           auth: 
             username: $DOCKER_USERNAME
             password: $DOCKER_PASS
-        - image: circleci/mysql:8.0.3
+        - image: cimg/mysql:8.0
           auth: 
             username: $DOCKER_USERNAME
             password: $DOCKER_PASS
@@ -152,8 +152,8 @@ jobs:
       - run:
           name: Run Go unit tests with coverage
           command: |
-            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings)
-            echo $PACKAGE_NAMES | \
+            TESTS=$(circleci tests glob "cmd/web/*_test.go" | circleci tests split --split-by=timings)
+            echo $TESTS | \
             circleci tests run --split-by=timings --fail-fast --batch-count=3 --verbose --test-results-path="${TEST_RESULTS}" \
             --command="gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out --raw-command -- echo"
       - store_test_results:
