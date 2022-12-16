@@ -152,8 +152,7 @@ jobs:
       - run:
           name: Run Go unit tests with coverage
           command: |
-            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-            gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out ./... $PACKAGE_NAMES
+            go list ./... | circleci tests run --split-by=timings --fail-fast --batch-count=3 --verbose --test-results-path="${TEST_RESULTS}" --command="gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out --raw-command -- circleci tests run"
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
@@ -170,6 +169,7 @@ jobs:
       - restore_go_cache
       - build_container
 
+  ### How to run cypress tests without the orb##
   # cypress-tests:
   #   executor: machine_with_dlc
   #   steps:
