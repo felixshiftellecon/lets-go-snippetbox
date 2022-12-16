@@ -1,7 +1,6 @@
 version: 2.1
 
 orbs:
-  aws-ecr: circleci/aws-ecr@7.2.0
   slack: circleci/slack@4.4.4
   go: circleci/go@1.7.0
   cypress: cypress-io/cypress@1.29.0
@@ -66,16 +65,10 @@ commands:
           command: |
             echo $DOCKER_PASS | docker login -u $DOCKER_USERNAME --password-stdin
             docker-compose up -d
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.1
+      - docker/install-dockerize
       - run:
           name: Wait for snippetbox
-          command: |
-                  sleep 10
-                  dockerize -wait tcp://localhost:4000 -timeout 1m
+          command: dockerize -wait tcp://localhost:4000 -timeout 1m
   restore_go_cache:
     description: Restore the go cache
     steps:
@@ -127,7 +120,7 @@ jobs:
     steps:
       - checkout
       - restore_go_cache
-      - run: mkdir -p /tmp/code_coverage/
+      - run: mkdir -p $CODE_COVERAGE
       - run: mkdir -p $TEST_RESULTS
       - run: |
           sudo apt-get update
@@ -156,9 +149,9 @@ jobs:
             --split-by=timings --fail-fast --batch-count=3 --verbose --test-results-path="${TEST_RESULTS}" \
             --command="xargs gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out"
       - store_test_results:
-          path: /tmp/test-results
+          path: $TEST_RESULTS
       - store_artifacts:
-          path: /tmp/code_coverage/profile.out
+          path: $CODE_COVERAGE/profile.out
       - save_cache:
           key: go-mod-v1-{{ checksum "go.mod" }}-{{ checksum "go.sum" }}
           paths:
@@ -235,7 +228,8 @@ workflows:
           name: cypress-tests
           executor: machine_with_dlc
           parallel: true
-          parallelism: 2
+          parallelism: 3
+          working_directory: /mnt/ramdisk
           requires:
             - build
             - unit-tests
