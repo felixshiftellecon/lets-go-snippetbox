@@ -8,6 +8,7 @@ describe ('Create snippet', () => {
   before(() => {
     cy.signupForTest(username, email, password)
   })
+  throw new Error("test fails here")
 
   context('not logged in', () => {
     it('redirects user to signup', () => {
