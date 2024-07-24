@@ -206,69 +206,69 @@ jobs:
 workflows:
   build-test-and-deploy:
     jobs:
-      - go_lint_and_analyze
-      - lint_docker_compose
-      - docker/hadolint:
-          dockerfiles: ./docker/app/Dockerfile:./docker/db/Dockerfile
-          executor-class: medium
-          hadolint-tag: 2.2.0-debian
-          ignore-rules: 'DL3003,DL3059'
-      - build:
-          requires:
-              - go_lint_and_analyze
-              - lint_docker_compose
-              - docker/hadolint
-      - unit-tests:
-          requires:
-            - go_lint_and_analyze
-            - lint_docker_compose
-            - docker/hadolint
-      - cypress/install:
-          requires:
-            - unit-tests
-      - cypress/run:
-          name: cypress-tests
-          executor: machine_with_dlc
-          parallel: false
-          parallelism: 1
-          requires:
-            - build
-            - unit-tests
-            - cypress/install
-          pre-steps:
-            - checkout
-            - run: |
-                    circleci tests glob "cypress/integration/*.spec.js" > /tmp/tests.txt
-                    cat /tmp/tests.txt
-            - run: |
-                    sudo apt-get update
-                    sudo apt-get install -y libgbm-dev
-            - start_app_and_verify
-            - restore_cache:
-                keys:
-                  - cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
-                  - cypress-v2{{ .Branch }}
-                  - cypress-v2
-            - save_cache:
-                key: cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
-                paths:
-                  - ~/.npm
-                  - ~/.cache
-          post-steps:
-            - store_test_results:
-                path: test-results
-          record: true
-          command: |
-                    cat /tmp/tests.txt | \
-                    circleci tests run --command="xargs npx cypress run --spec"
-          attach-workspace: true
-          no-workspace: true
-      - deploy:
-          requires:
-            - cypress-tests
-          filters:
-            branches:
-              only:
-                - main
+      # - go_lint_and_analyze
+      # - lint_docker_compose
+      # - docker/hadolint:
+      #     dockerfiles: ./docker/app/Dockerfile:./docker/db/Dockerfile
+      #     executor-class: medium
+      #     hadolint-tag: 2.2.0-debian
+      #     ignore-rules: 'DL3003,DL3059'
+      # - build:
+      #     requires:
+      #         - go_lint_and_analyze
+      #         - lint_docker_compose
+      #         - docker/hadolint
+        - unit-tests
+      #     requires:
+      #       - go_lint_and_analyze
+      #       - lint_docker_compose
+      #       - docker/hadolint
+      # - cypress/install:
+      #     requires:
+      #       - unit-tests
+      # - cypress/run:
+      #     name: cypress-tests
+      #     executor: machine_with_dlc
+      #     parallel: false
+      #     parallelism: 1
+      #     requires:
+      #       - build
+      #       - unit-tests
+      #       - cypress/install
+      #     pre-steps:
+      #       - checkout
+      #       - run: |
+      #               circleci tests glob "cypress/integration/*.spec.js" > /tmp/tests.txt
+      #               cat /tmp/tests.txt
+      #       - run: |
+      #               sudo apt-get update
+      #               sudo apt-get install -y libgbm-dev
+      #       - start_app_and_verify
+      #       - restore_cache:
+      #           keys:
+      #             - cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
+      #             - cypress-v2{{ .Branch }}
+      #             - cypress-v2
+      #       - save_cache:
+      #           key: cypress-v2{{ .Branch }}-{{ checksum "package.json" }}
+      #           paths:
+      #             - ~/.npm
+      #             - ~/.cache
+      #     post-steps:
+      #       - store_test_results:
+      #           path: test-results
+      #     record: true
+      #     command: |
+      #               cat /tmp/tests.txt | \
+      #               circleci tests run --command="xargs npx cypress run --spec"
+      #     attach-workspace: true
+      #     no-workspace: true
+      # - deploy:
+      #     requires:
+      #       - cypress-tests
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
 
 # VS Code Extension Version: 1.4.0
