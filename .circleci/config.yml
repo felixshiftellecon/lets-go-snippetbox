@@ -119,8 +119,6 @@ jobs:
     steps:
       - checkout
       - restore_go_cache
-      - run: mkdir -pv $CODE_COVERAGE
-      - run: mkdir -pv $TEST_RESULTS
       - run: |
           sudo apt-get update
           sudo apt-get install default-mysql-client
@@ -144,6 +142,9 @@ jobs:
       - run:
           name: Run Go unit tests with coverage
           command: |
+              mkdir -pv $TEST_RESULTS
+              mkdir -pv $CODE_COVERAGE
+
               go list ./... | circleci tests run \
               --command "xargs gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml --" \
               --split-by=timings --timings-type=name
