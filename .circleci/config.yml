@@ -146,7 +146,7 @@ jobs:
           name: Run Go unit tests with coverage
           command: |
             go list ./... | circleci tests run \
-            --split-by=timings --fail-fast --batch-count=3 --verbose --test-results-path="${TEST_RESULTS}" \
+            --split-by=timings --timings-type=name\
             --command="xargs gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out"
       - store_test_results:
           path: $TEST_RESULTS
@@ -260,8 +260,7 @@ workflows:
           record: true
           command: |
                     cat /tmp/tests.txt | \
-                    circleci tests run --command="xargs npx cypress run --spec" \
-                    --fail-fast --batch-count=1 --test-results-path=/home/circleci/project/test-results
+                    circleci tests run --command="xargs npx cypress run --spec"
           attach-workspace: true
           no-workspace: true
       - deploy:
