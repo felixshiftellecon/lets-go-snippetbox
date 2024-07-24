@@ -223,7 +223,9 @@ workflows:
             - go_lint_and_analyze
             - lint_docker_compose
             - docker/hadolint
-      - cypress/install
+      - cypress/install:
+          requires:
+            - unit-tests
       - cypress/run:
           name: cypress-tests
           executor: machine_with_dlc
