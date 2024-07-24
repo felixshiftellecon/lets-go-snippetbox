@@ -113,9 +113,6 @@ jobs:
     executor: go_docker_and_mysql
     parallelism: 2
     working_directory: ~/project
-    environment:
-      TEST_RESULTS: ~/project/test_results
-      CODE_COVERAGE: ~/project/code_coverage
     steps:
       - checkout
       - restore_go_cache
@@ -142,14 +139,13 @@ jobs:
       - run:
           name: Run Go unit tests with coverage
           command: |
-              mkdir -pv $TEST_RESULTS
-              mkdir -pv $CODE_COVERAGE
+              mkdir -pv /tmp/test-results
 
               go list ./... | circleci tests run \
-              --command "xargs gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml --" \
+              --command "xargs gotestsum --junitfile /tmp/test-results/unit-tests-report.xml --" \
               --split-by=timings --timings-type=name
       - store_test_results:
-          path: $TEST_RESULTS
+          path: /tmp/test-results
       - store_artifacts:
           path: $CODE_COVERAGE/profile.out
       - save_cache:
