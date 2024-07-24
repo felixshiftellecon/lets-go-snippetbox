@@ -227,8 +227,8 @@ workflows:
       - cypress/run:
           name: cypress-tests
           executor: machine_with_dlc
-          parallel: true
-          parallelism: 3
+          parallel: false
+          parallelism: 1
           requires:
             - build
             - unit-tests
@@ -259,7 +259,7 @@ workflows:
           command: |
                     cat /tmp/tests.txt | \
                     circleci tests run --command="xargs npx cypress run --spec" \
-                    --fail-fast --batch-count=1 --test-results-path=/home/circleci/project/test-results --split-by=name
+                    --fail-fast --batch-count=1 --test-results-path=/home/circleci/project/test-results
           attach-workspace: true
           no-workspace: true
       - deploy:
