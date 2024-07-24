@@ -78,7 +78,6 @@ commands:
             - go-mod-v1-{{ checksum "go.mod" }}-
             - go-mod-v1-
 
-
 jobs:
   go_lint_and_analyze:
     executor: go_docker
@@ -145,9 +144,9 @@ jobs:
       - run:
           name: Run Go unit tests with coverage
           command: |
-            go list ./... | circleci tests run \
-            --split-by=timings --timings-type=name\
-            --command="xargs gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out"
+              go list ./... | circleci tests run \
+              --command="xargs gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out --" \
+              --split-by=timings --timings-type=name
       - store_test_results:
           path: $TEST_RESULTS
       - store_artifacts:
