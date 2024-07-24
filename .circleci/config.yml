@@ -112,6 +112,7 @@ jobs:
   unit-tests:
     executor: go_docker_and_mysql
     parallelism: 2
+    working_directory: ~/project
     environment:
       TEST_RESULTS: /tmp/test-results
       CODE_COVERAGE: /tmp/code_coverage
@@ -143,8 +144,12 @@ jobs:
       - run:
           name: Run Go unit tests with coverage
           command: |
+              ls
+
+              cd project
+
               go list ./... | circleci tests run \
-              --command "xargs gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml -- -coverprofile=${CODE_COVERAGE}/profile.out --" \
+              --command "xargs gotestsum --junitfile ${TEST_RESULTS}/unit-tests-report.xml --coverprofile=${CODE_COVERAGE}/profile.out --" \
               --split-by=timings --timings-type=name
       - store_test_results:
           path: $TEST_RESULTS
