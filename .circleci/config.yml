@@ -114,8 +114,8 @@ jobs:
     parallelism: 2
     working_directory: ~/project
     environment:
-      TEST_RESULTS: /tmp/test-results
-      CODE_COVERAGE: /tmp/code_coverage
+      TEST_RESULTS: ~/project/test_results
+      CODE_COVERAGE: ~/project/code_coverage
     steps:
       - checkout
       - restore_go_cache
