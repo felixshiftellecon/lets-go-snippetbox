@@ -12,6 +12,7 @@ services:
       MYSQL_USER: web
       MYSQL_PASSWORD: testing123
     restart: on-failure
+    platform: linux/arm64
   app:
     container_name: snippetbox
     build:
@@ -24,3 +25,4 @@ services:
       - db
     command: ./app
     restart: on-failure
+    platform: linux/arm64

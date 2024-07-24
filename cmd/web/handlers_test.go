@@ -8,6 +8,11 @@ import (
 	"testing"
 )
 
+func TestFail(t *testing.T) {
+	t.Logf("This test fails")
+	t.Fail()
+}
+
 func TestPing(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())

@@ -1,5 +1,5 @@
 # snippetbox
-FROM golang:1.16-alpine
+FROM arm64v8/golang:1.16
 
 WORKDIR /app
 
